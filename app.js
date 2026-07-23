@@ -329,21 +329,38 @@ async function makeViralCard(){
   ctx.fillText(cta,W/2,740);ctx.textAlign="start";
 
   // domain
-  ctx.fillStyle="rgba(255,255,255,0.7)";ctx.font="700 32px 'PingFang SC','Microsoft YaHei',sans-serif";
+  ctx.fillStyle="rgba(255,255,255,0.7)";ctx.font="700 28px 'PingFang SC','Microsoft YaHei',sans-serif";
   ctx.textAlign="center";
-  ctx.fillText("givetheworldcuptochinaplease.netlify.app",W/2,840);
+  ctx.fillText("givetheworldcuptochinaplease.netlify.app",W/2,830);
   ctx.textAlign="start";
+
+  // QR code
+  const qrSize=140,qrY=860;
+  ctx.fillStyle="#fff";ctx.fillRect((W-qrSize)/2-6,qrY-6,qrSize+12,qrSize+12);
+  try{
+    const qrImg=await new Promise((resolve,reject)=>{
+      const img=new Image();img.crossOrigin="anonymous";
+      img.onload=()=>resolve(img);img.onerror=reject;
+      img.src=`https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=${encodeURIComponent(SITE_URL)}`;
+      setTimeout(()=>reject(new Error("QR timeout")),4000);
+    });
+    ctx.drawImage(qrImg,(W-qrSize)/2,qrY,qrSize,qrSize);
+  }catch(e){console.warn("QR failed",e);}
+
+  // QR label
+  ctx.fillStyle="rgba(255,255,255,0.5)";ctx.font="500 22px 'PingFang SC','Microsoft YaHei',sans-serif";
+  ctx.textAlign="center";ctx.fillText("扫码投票",W/2,qrY+qrSize+32);ctx.textAlign="start";
 
   // hashtags
   ctx.fillStyle="rgba(255,255,255,0.5)";ctx.font="500 26px 'PingFang SC','Microsoft YaHei',sans-serif";
   ctx.textAlign="center";
-  ctx.fillText("#世界杯 #中国队 #缺你一票",W/2,910);
+  ctx.fillText("#世界杯 #中国队 #缺你一票",W/2,1070);
   ctx.textAlign="start";
 
   // my vote
   ctx.fillStyle="rgba(255,255,255,0.4)";ctx.font="500 24px 'PingFang SC','Microsoft YaHei',sans-serif";
   ctx.textAlign="center";
-  ctx.fillText(`我的投票编号 #${fmt(lastId)}`,W/2,980);
+  ctx.fillText(`我的投票编号 #${fmt(lastId)}`,W/2,1130);
   ctx.textAlign="start";
 
   return canvas;
