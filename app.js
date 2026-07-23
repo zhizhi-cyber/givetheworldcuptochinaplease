@@ -282,11 +282,67 @@ async function autoVoteChina(){
 }
 
 // ---- share ----
-async function sharePage(){
-  const text=t("shareTextChina");
-  if(navigator.share){try{await navigator.share({title:document.title,text,url:location.href});return;}catch{}}
-  await navigator.clipboard.writeText(`${text} ${location.href}`);
-  alert(t("sharePageAlert"));
+async function shareCard(){
+  const snap=await db.ref("votes/lastId").once("value");
+  const lastId=snap.val()||voteData.lastId;
+  const canvas=document.createElement("canvas"),ctx=canvas.getContext("2d");
+  const S=1080;canvas.width=S;canvas.height=S; // 1:1 for social
+  const siteUrl="https://givetheworldcuptochinaplease.netlify.app/";
+
+  // all red
+  ctx.fillStyle="#d4212b";ctx.fillRect(0,0,S,S);
+  const g=ctx.createLinearGradient(0,0,0,S);
+  g.addColorStop(0,"rgba(0,0,0,0.2)");g.addColorStop(1,"rgba(0,0,0,0)");
+  ctx.fillStyle=g;ctx.fillRect(0,0,S,S);
+
+  // trophy emoji
+  ctx.font="120px sans-serif";ctx.textAlign="center";
+  ctx.fillText("🏆",S/2,220);ctx.textAlign="start";
+
+  // headline
+  ctx.fillStyle="#fff";ctx.font="900 64px 'PingFang SC','Microsoft YaHei',sans-serif";
+  ctx.textAlign="center";ctx.fillText(t("posterLine1"),S/2,370);
+
+  ctx.fillStyle="#ffd700";ctx.font="900 88px 'PingFang SC','Microsoft YaHei',sans-serif";
+  ctx.fillText(t("posterLine2"),S/2,480);ctx.textAlign="start";
+
+  // divider
+  ctx.strokeStyle="rgba(255,255,255,0.25)";ctx.lineWidth=2;
+  ctx.beginPath();ctx.moveTo(140,560);ctx.lineTo(S-140,560);ctx.stroke();
+
+  // vote number
+  ctx.fillStyle="#fff";ctx.font="950 140px 'PingFang SC','Microsoft YaHei',sans-serif";
+  ctx.textAlign="center";ctx.fillText(`#${fmt(lastId)}`,S/2,720);ctx.textAlign="start";
+
+  ctx.fillStyle="rgba(255,255,255,0.8)";ctx.font="700 36px 'PingFang SC','Microsoft YaHei',sans-serif";
+  ctx.textAlign="center";ctx.fillText(t("recordLabel"),S/2,790);ctx.textAlign="start";
+
+  // site URL at bottom
+  ctx.fillStyle="rgba(255,255,255,0.5)";ctx.font="500 28px 'PingFang SC','Microsoft YaHei',sans-serif";
+  ctx.textAlign="center";
+  ctx.fillText("givetheworldcuptochinaplease.netlify.app",S/2,920);
+  ctx.textAlign="start";
+
+  // try Web Share API with image
+  try{
+    const blob=await new Promise(r=>canvas.toBlob(r,"image/png"));
+    const file=new File([blob],"vote-card.png",{type:"image/png"});
+    if(navigator.canShare&&navigator.canShare({files:[file]})){
+      await navigator.share({
+        title:document.title,
+        text:t("shareTextChina"),
+        url:siteUrl,
+        files:[file]
+      });
+      return;
+    }
+  }catch(e){console.log("Web Share with file not supported",e);}
+
+  // fallback: download
+  const link=document.createElement("a");
+  link.download=`vote-${lastId}.png`;link.href=canvas.toDataURL();
+  link.click();
+  alert("分享卡片已下载，可发布到微博/朋友圈/Instagram/Twitter 等平台。");
 }
 
 // ---- poster ----
@@ -439,7 +495,7 @@ async function init(){
   }));
 
   $("#voteForm").addEventListener("submit",submitVote);
-  $("#shareButton").addEventListener("click",sharePage);
+  $("#shareCardBtn").addEventListener("click",shareCard);
   $("#posterButton").addEventListener("click",downloadPoster);
   $("#refreshReasons").addEventListener("click",refreshReasons);
 
