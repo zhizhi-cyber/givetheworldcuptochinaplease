@@ -144,12 +144,10 @@ header {
   50% { box-shadow: 0 8px 40px rgba(212,33,43,0.55); }
 }
 
-.button.outline-india {
-  background: transparent; border-color: var(--india); color: var(--india);
+.button.outline {
+  background: transparent; border-color: #555; color: #aaa;
 }
-.button.outline-india:hover {
-  background: rgba(255,153,51,0.1);
-}
+.button.outline:hover { border-color: #888; color: #ddd; }
 .button.outline-gold {
   background: transparent; border-color: var(--gold); color: var(--gold);
 }
