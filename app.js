@@ -282,67 +282,109 @@ async function autoVoteChina(){
 }
 
 // ---- share ----
-async function shareCard(){
+const SITE_URL="https://givetheworldcuptochinaplease.netlify.app/";
+
+async function makeViralCard(){
   const snap=await db.ref("votes/lastId").once("value");
   const lastId=snap.val()||voteData.lastId;
+  const d=voteData;
   const canvas=document.createElement("canvas"),ctx=canvas.getContext("2d");
-  const S=1080;canvas.width=S;canvas.height=S; // 1:1 for social
-  const siteUrl="https://givetheworldcuptochinaplease.netlify.app/";
+  // 3:4 vertical for Moments/feed
+  const W=900,H=1200;canvas.width=W;canvas.height=H;
 
-  // all red
-  ctx.fillStyle="#d4212b";ctx.fillRect(0,0,S,S);
-  const g=ctx.createLinearGradient(0,0,0,S);
+  // red bg
+  ctx.fillStyle="#d4212b";ctx.fillRect(0,0,W,H);
+  const g=ctx.createLinearGradient(0,0,0,300);
   g.addColorStop(0,"rgba(0,0,0,0.2)");g.addColorStop(1,"rgba(0,0,0,0)");
-  ctx.fillStyle=g;ctx.fillRect(0,0,S,S);
+  ctx.fillStyle=g;ctx.fillRect(0,0,W,300);
 
-  // trophy emoji
-  ctx.font="120px sans-serif";ctx.textAlign="center";
-  ctx.fillText("🏆",S/2,220);ctx.textAlign="start";
+  // trophy
+  ctx.font="90px sans-serif";ctx.textAlign="center";
+  ctx.fillText("🏆",W/2,140);ctx.textAlign="start";
 
   // headline
-  ctx.fillStyle="#fff";ctx.font="900 64px 'PingFang SC','Microsoft YaHei',sans-serif";
-  ctx.textAlign="center";ctx.fillText(t("posterLine1"),S/2,370);
-
-  ctx.fillStyle="#ffd700";ctx.font="900 88px 'PingFang SC','Microsoft YaHei',sans-serif";
-  ctx.fillText(t("posterLine2"),S/2,480);ctx.textAlign="start";
+  ctx.fillStyle="#fff";ctx.font="900 52px 'PingFang SC','Microsoft YaHei',sans-serif";
+  ctx.textAlign="center";ctx.fillText(t("posterLine1"),W/2,290);
+  ctx.fillStyle="#ffd700";ctx.font="900 72px 'PingFang SC','Microsoft YaHei',sans-serif";
+  ctx.fillText(t("posterLine2"),W/2,380);ctx.textAlign="start";
 
   // divider
-  ctx.strokeStyle="rgba(255,255,255,0.25)";ctx.lineWidth=2;
-  ctx.beginPath();ctx.moveTo(140,560);ctx.lineTo(S-140,560);ctx.stroke();
+  ctx.strokeStyle="rgba(255,255,255,0.2)";ctx.lineWidth=2;
+  ctx.beginPath();ctx.moveTo(100,450);ctx.lineTo(W-100,450);ctx.stroke();
 
-  // vote number
-  ctx.fillStyle="#fff";ctx.font="950 140px 'PingFang SC','Microsoft YaHei',sans-serif";
-  ctx.textAlign="center";ctx.fillText(`#${fmt(lastId)}`,S/2,720);ctx.textAlign="start";
-
-  ctx.fillStyle="rgba(255,255,255,0.8)";ctx.font="700 36px 'PingFang SC','Microsoft YaHei',sans-serif";
-  ctx.textAlign="center";ctx.fillText(t("recordLabel"),S/2,790);ctx.textAlign="start";
-
-  // site URL at bottom
-  ctx.fillStyle="rgba(255,255,255,0.5)";ctx.font="500 28px 'PingFang SC','Microsoft YaHei',sans-serif";
+  // vs counts
+  const chinaPct=d.china+d.india?Math.round(d.china/(d.china+d.india)*100):50;
+  const indiaPct=100-chinaPct;
   ctx.textAlign="center";
-  ctx.fillText("givetheworldcuptochinaplease.netlify.app",S/2,920);
+  ctx.fillStyle="#fff";ctx.font="900 64px 'PingFang SC','Microsoft YaHei',sans-serif";
+  ctx.fillText(`🇨🇳 ${fmt(d.china)} 票  ·  ${chinaPct}%`,W/2,560);
+  ctx.fillStyle="#ff9933";ctx.font="900 48px 'PingFang SC','Microsoft YaHei',sans-serif";
+  ctx.fillText(`🇮🇳 ${fmt(d.india)} 票  ·  ${indiaPct}%`,W/2,630);
   ctx.textAlign="start";
 
-  // try Web Share API with image
+  // CTA
+  ctx.fillStyle="#ffd700";ctx.font="900 44px 'PingFang SC','Microsoft YaHei',sans-serif";
+  ctx.textAlign="center";
+  const cta=LANG==="en"?"Which side are you on?":"你站哪边？";
+  ctx.fillText(cta,W/2,740);ctx.textAlign="start";
+
+  // domain
+  ctx.fillStyle="rgba(255,255,255,0.7)";ctx.font="700 32px 'PingFang SC','Microsoft YaHei',sans-serif";
+  ctx.textAlign="center";
+  ctx.fillText("givetheworldcuptochinaplease.netlify.app",W/2,840);
+  ctx.textAlign="start";
+
+  // hashtags
+  ctx.fillStyle="rgba(255,255,255,0.5)";ctx.font="500 26px 'PingFang SC','Microsoft YaHei',sans-serif";
+  ctx.textAlign="center";
+  ctx.fillText("#世界杯 #中国队 #缺你一票",W/2,910);
+  ctx.textAlign="start";
+
+  // my vote
+  ctx.fillStyle="rgba(255,255,255,0.4)";ctx.font="500 24px 'PingFang SC','Microsoft YaHei',sans-serif";
+  ctx.textAlign="center";
+  ctx.fillText(`我的投票编号 #${fmt(lastId)}`,W/2,980);
+  ctx.textAlign="start";
+
+  return canvas;
+}
+
+async function shareMoments(){
+  const canvas=await makeViralCard();
   try{
     const blob=await new Promise(r=>canvas.toBlob(r,"image/png"));
-    const file=new File([blob],"vote-card.png",{type:"image/png"});
+    const file=new File([blob],"vote.png",{type:"image/png"});
     if(navigator.canShare&&navigator.canShare({files:[file]})){
-      await navigator.share({
-        title:document.title,
-        text:t("shareTextChina"),
-        url:siteUrl,
-        files:[file]
-      });
+      await navigator.share({title:document.title,text:t("shareTextChina"),files:[file]});
       return;
     }
-  }catch(e){console.log("Web Share with file not supported",e);}
+  }catch(e){console.log("Web Share failed",e);}
+  // fallback download
+  const link=document.createElement("a");link.download="vote-card.png";link.href=canvas.toDataURL();link.click();
+  alert("卡片已下载，可发布到朋友圈 / Instagram / 小红书。");
+}
 
-  // fallback: download
-  const link=document.createElement("a");
-  link.download=`vote-${lastId}.png`;link.href=canvas.toDataURL();
-  link.click();
-  alert("分享卡片已下载，可发布到微博/朋友圈/Instagram/Twitter 等平台。");
+async function shareWeibo(){
+  const canvas=await makeViralCard();
+  const shareText=LANG==="en"
+    ?"The World Cup trophy should go directly to China. 1.4B vs 1.4B. Vote now! #WorldCup #China #YourVoteMatters"
+    :"世界杯奖杯应该直接颁给中国队！14亿vs14亿，快来投票！ #世界杯 #中国队 #缺你一票";
+  const weiboUrl=`https://service.weibo.com/share/share.php?title=${encodeURIComponent(shareText)}&url=${encodeURIComponent(SITE_URL)}&pic=`;
+  // download card for user to attach
+  const link=document.createElement("a");link.download="vote-card.png";link.href=canvas.toDataURL();link.click();
+  // open weibo share
+  window.open(weiboUrl,"_blank","width=600,height=500");
+  // also try twitter intent
+  const twUrl=`https://twitter.com/intent/tweet?text=${encodeURIComponent(shareText)}&url=${encodeURIComponent(SITE_URL)}`;
+  if(!navigator.userAgent.includes("Weibo")) window.open(twUrl,"_blank","width=600,height=400");
+}
+
+async function copyShare(){
+  const text=LANG==="en"
+    ?"The World Cup trophy should go directly to China! 1.4B vs 1.4B — cast your vote now!\n\n👉 https://givetheworldcuptochinaplease.netlify.app/"
+    :"世界杯奖杯应该直接颁给中国队！14亿vs14亿，缺你一票！\n\n👉 https://givetheworldcuptochinaplease.netlify.app/";
+  await navigator.clipboard.writeText(text);
+  alert(LANG==="en"?"Copied! Paste to share.":"已复制！粘贴到抖音/小红书/评论区即可。");
 }
 
 // ---- poster ----
@@ -495,8 +537,9 @@ async function init(){
   }));
 
   $("#voteForm").addEventListener("submit",submitVote);
-  $("#shareCardBtn").addEventListener("click",shareCard);
-  $("#posterButton").addEventListener("click",downloadPoster);
+  $("#shareMomentsBtn").addEventListener("click",shareMoments);
+  $("#shareWeiboBtn").addEventListener("click",shareWeibo);
+  $("#copyShareBtn").addEventListener("click",copyShare);
   $("#refreshReasons").addEventListener("click",refreshReasons);
 
   $("#msgText").addEventListener("input",()=>{$("#msgCounter").textContent=$("#msgText").value.length+"/280";});
