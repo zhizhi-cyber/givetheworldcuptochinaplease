@@ -1,0 +1,187 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="description" content="14 Billion People's Voice — The World Cup Trophy Should Go Directly to China. Your Vote Matters." />
+    <meta property="og:title" content="Your Vote Matters | World Cup Trophy: China or India?" />
+    <meta property="og:description" content="1.4 Billion vs 1.4 Billion: Support China to receive the World Cup trophy. A global fan initiative." />
+    <meta property="og:image" content="https://images.unsplash.com/photo-1527871369852-eb58cb2b54e2?auto=format&fit=crop&w=1200&q=85" />
+    <meta property="og:url" content="https://givetheworldcuptochinaplease.netlify.app/" />
+    <meta property="og:type" content="website" />
+    <meta name="twitter:card" content="summary_large_image" />
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'><text y='56' font-size='56'>⚽</text></svg>" />
+    <title>Your Vote Matters | World Cup Trophy: China or India?</title>
+    <link rel="preconnect" href="https://images.unsplash.com" />
+    <link rel="stylesheet" href="styles.css" />
+    <link rel="alternate" hreflang="zh-CN" href="https://givetheworldcuptochinaplease.netlify.app/" />
+    <link rel="alternate" hreflang="en" href="https://givetheworldcuptochinaplease.netlify.app/index-en.html" />
+  </head>
+  <body>
+    <div class="top-line"></div>
+    <main class="site">
+      <header>
+        <a class="brand" href="#top">⚽ <strong>Your Vote Matters</strong></a>
+        <a class="language" href="index.html">中文</a>
+      </header>
+
+      <!-- ===== HERO ===== -->
+      <section class="hero" id="top">
+        <div class="hero-image">
+          <img src="https://images.unsplash.com/photo-1527871369852-eb58cb2b54e2?auto=format&fit=crop&w=1200&q=85" alt="Lifting the World Cup Trophy" />
+          <span>Voting Now</span>
+        </div>
+        <div class="hero-copy">
+          <p class="eyebrow">Global Fan Initiative</p>
+          <h1>The World Cup Trophy Should<em>Go Directly to China</em></h1>
+          <p class="intro">We call for rethinking the meaning of the World Cup: can a single trophy bring the beautiful game to the largest number of people on Earth?</p>
+          <div class="counter-card" aria-live="polite">
+            <div class="counter-wrapper">
+              <span class="counter-prefix">#</span>
+              <strong id="heroChinaCount" class="counter-roll">0</strong>
+            </div>
+            <h2>Cumulative Support Votes</h2>
+            <p>Real-time cloud tally. Each submission counts as one vote. Repeat support is encouraged.</p>
+          </div>
+          <div class="hero-actions">
+            <button class="button primary pulse" data-go-vote="china">🇨🇳 Cast Your Vote</button>
+            <button class="button outline" data-go-vote="other">🤔 I Have a Different Opinion</button>
+          </div>
+        </div>
+      </section>
+
+      <!-- ===== POSITION ===== -->
+      <section class="section" id="position">
+        <div class="section-heading">
+          <span>Our Position</span>
+          <h2>Why China?</h2>
+        </div>
+        <p class="body-copy">The World Cup's value should not remain locked in the trophy cabinets of traditional powers. When a trophy can reach one-fifth of humanity, the question is no longer "who plays better" but "who can make more people fall in love with football."</p>
+        <img class="claim-image" src="https://images.unsplash.com/photo-1637203727317-3cc1a557cdbf?auto=format&fit=crop&w=1200&q=85" alt="Golden World Cup Trophy on the pitch" />
+        <blockquote>When a trophy can make a billion people cheer at once, it represents more than victory — it represents football's future.</blockquote>
+      </section>
+
+      <!-- ===== REASONS ===== -->
+      <section class="section" id="reasons">
+        <div class="section-heading">
+          <span>N Reasons</span>
+          <h2>Why the Trophy Should Go to China</h2>
+        </div>
+        <div class="reason-controls">
+          <button class="button refresh-btn" id="refreshReasons">👀 See More Reasons</button>
+        </div>
+        <div class="reason-list" id="reasonList"></div>
+      </section>
+
+      <!-- ===== VOTE ===== -->
+      <section class="section" id="vote">
+        <div class="section-heading">
+          <span>Public Vote</span>
+          <h2>Make Your Voice Heard</h2>
+          <p>Support China directly, or choose the other 1.4-billion-population nation to express a different view. Repeat voting is allowed.</p>
+        </div>
+        <form class="ballot" id="voteForm">
+          <button class="choice china-choice selected" type="button" data-choice="china">
+            <span>🇨🇳</span>
+            <span class="choice-label">
+              <strong>Support China Directly</strong>
+              <small>Endorse the full proposition of this initiative</small>
+            </span>
+            <i></i>
+          </button>
+          <button class="choice india-choice" type="button" data-choice="india">
+            <span>🇮🇳</span>
+            <span class="choice-label">
+              <strong>Support the Other 1.4-Billion Nation</strong>
+              <small>India — also home to the world's largest population, another football frontier</small>
+            </span>
+            <i></i>
+          </button>
+          <p class="error" id="formError" role="alert"></p>
+          <button class="submit" type="submit">Submit Your Vote</button>
+        </form>
+
+        <section class="success hidden" id="success" aria-live="polite">
+          <span>Vote Recorded ✓</span>
+          <h3>Your Voice Has Entered the Global Real-Time Results</h3>
+          <p>This submission counts as one vote. Share this initiative and bring more people into the 1.4B vs 1.4B conversation.</p>
+          <div class="record"><small>Global Voting Record No.</small><strong id="recordId">#0</strong></div>
+          <div class="success-actions">
+            <button class="button primary" id="shareButton">📤 Share</button>
+            <button class="button outline-gold" id="posterButton">🖼 Download Poster</button>
+          </div>
+        </section>
+      </section>
+
+      <!-- ===== RESULTS ===== -->
+      <section class="section" id="results">
+        <div class="section-heading">
+          <span>Real-Time Results</span>
+          <h2>Every Vote Is Counted</h2>
+          <p>Cloud-synced in real time. China vs. India — who gains more support?</p>
+        </div>
+        <div class="results-vs">
+          <div class="vs-card vs-china">
+            <span class="vs-flag">🇨🇳</span>
+            <strong id="chinaCount">0</strong>
+            <span class="vs-label">Support China</span>
+          </div>
+          <div class="vs-divider">VS</div>
+          <div class="vs-card vs-india">
+            <span class="vs-flag">🇮🇳</span>
+            <strong id="indiaCount">0</strong>
+            <span class="vs-label">Support India</span>
+          </div>
+        </div>
+        <div class="result-list" id="resultList"></div>
+        <p class="total-footnote">Total Votes: <strong id="totalCount">0</strong></p>
+      </section>
+
+      <!-- ===== MESSAGE BOARD ===== -->
+      <section class="section" id="messages">
+        <div class="section-heading">
+          <span>Fan Message Board</span>
+          <h2>Leave Your Voice</h2>
+        </div>
+        <form class="msg-form" id="msgForm">
+          <input class="msg-nick" id="msgNick" type="text" placeholder="Your nickname (optional)" maxlength="20" />
+          <textarea class="msg-text" id="msgText" placeholder="Say something..." maxlength="280" required></textarea>
+          <div class="msg-form-bottom">
+            <span class="msg-counter" id="msgCounter">0/280</span>
+            <button class="button primary" type="submit">Post</button>
+          </div>
+        </form>
+        <div class="msg-list" id="msgList"></div>
+        <div class="msg-pager" id="msgPager"></div>
+      </section>
+
+      <!-- ===== FAQ ===== -->
+      <section class="section faq">
+        <div class="section-heading"><span>About</span><h2>About This Vote</h2></div>
+        <details open>
+          <summary>Why China vs. India?</summary>
+          <p>China and India are the only two nations with 1.4-billion-plus populations. Their football development paths are dramatically different, making this comparison inherently discussion-worthy.</p>
+        </details>
+        <details>
+          <summary>Why is repeat voting allowed?</summary>
+          <p>This site measures the intensity of ongoing support, not a verified count of unique signatures. Every click is an expression of opinion.</p>
+        </details>
+        <details>
+          <summary>Where is the data stored?</summary>
+          <p>Votes and messages are stored in Firebase Realtime Database. All visitors share the same data. Like records are kept in your local browser.</p>
+        </details>
+        <p class="disclosure">This site is initiated by global football fans and is not affiliated with FIFA, the Chinese Football Association, the Indian Football Association, or any national or regional football governing body.</p>
+      </section>
+
+      <footer>
+        <strong>Your Vote Matters</strong>
+        <span>1.4B vs 1.4B — Who Deserves the Trophy?</span>
+        <a href="#top">Back to Top ↑</a>
+      </footer>
+    </main>
+
+    <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-database-compat.js"></script>
+    <script src="app.js"></script>
+  </body>
+</html>
