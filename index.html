@@ -1,0 +1,178 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta
+      name="description"
+      content="缺你一票｜支持世界杯奖杯直接颁给中国队"
+    />
+    <title>缺你一票｜支持世界杯奖杯直接颁给中国队</title>
+    <link rel="preconnect" href="https://images.unsplash.com" />
+    <link rel="stylesheet" href="styles.css" />
+  </head>
+  <body>
+    <div class="top-line"></div>
+    <main class="site">
+      <header>
+        <a class="brand" href="#top">⚽ <strong>缺你一票</strong></a>
+        <span class="language">中文</span>
+      </header>
+
+      <section class="hero" id="top">
+        <div class="hero-image">
+          <img
+            src="https://images.unsplash.com/photo-1527871369852-eb58cb2b54e2?auto=format&fit=crop&w=1200&q=85"
+            alt="举起大力神杯 — 世界杯冠军时刻"
+          />
+          <span>投票进行中</span>
+        </div>
+        <div class="hero-copy">
+          <p class="eyebrow">全球球迷公开倡议</p>
+          <h1>世界杯奖杯应该<em>直接颁给中国队</em></h1>
+          <p class="intro">
+            我们呼吁重新理解世界杯的全球使命：它不仅属于一场决赛，也属于亿万球迷、亚洲足球和正在走向球场的下一代。
+          </p>
+          <div class="counter-card" aria-live="polite">
+            <strong id="heroChinaCount">0</strong>
+            <h2>累计支持票</h2>
+            <p>每次成功提交计为一票，同一支持者可以重复声援。</p>
+          </div>
+          <div class="hero-actions">
+            <button class="button primary" data-go-vote="china">投下支持票</button>
+            <button class="button outline" data-go-vote="other">我有不同意见</button>
+          </div>
+        </div>
+      </section>
+
+      <section class="section" id="position">
+        <div class="section-heading">
+          <span>倡议主张</span>
+          <h2>为什么提出这次投票？</h2>
+        </div>
+        <p class="body-copy">
+          我们向 FIFA
+          及世界杯组织者提出一项明确诉求：将世界杯奖杯直接颁给中国国家男子足球队。世界杯的价值不应只停留在终场哨响的一刻，也应回应它能够触达多少人、代表多少地区，以及能否为下一代创造长期参与足球的理由。
+        </p>
+        <img
+          class="claim-image"
+          src="https://images.unsplash.com/photo-1637203727317-3cc1a557cdbf?auto=format&fit=crop&w=1200&q=85"
+          alt="金色大力神杯矗立在绿茵场上"
+        />
+        <blockquote>
+          当一座奖杯能够让更多人走近足球，它代表的就不只是胜负，还有这项运动未来的边界。
+        </blockquote>
+      </section>
+
+      <section class="section" id="reasons">
+        <div class="section-heading">
+          <span>N 项理由</span>
+          <h2>支持直接颁给中国队</h2>
+        </div>
+        <div class="reason-controls">
+          <button class="button refresh-btn" id="refreshReasons">👀 看看还有什么理由</button>
+        </div>
+        <div class="reason-list" id="reasonList"></div>
+      </section>
+
+      <section class="section" id="vote">
+        <div class="section-heading">
+          <span>公开投票</span>
+          <h2>记录你的立场</h2>
+          <p>支持本倡议，或选择其他代表队表达不同意见。</p>
+        </div>
+        <div class="notice">
+          <strong>允许重复声援</strong>
+          <p>页面展示累计投票次数。本地版本把投票保存在当前浏览器中。</p>
+        </div>
+        <form class="ballot" id="voteForm">
+          <button class="choice primary-choice selected" type="button" data-choice="china">
+            <span>🇨🇳</span>
+            <span><strong>支持直接颁给中国队</strong><small>赞同本倡议的完整主张</small></span>
+            <i></i>
+          </button>
+          <button class="choice" type="button" data-choice="other">
+            <span>🌍</span>
+            <span><strong>支持其他代表队</strong><small>选择国家或地区表达不同立场</small></span>
+            <i></i>
+          </button>
+
+          <div class="team-picker hidden" id="teamPicker">
+            <label for="teamSearch">选择你支持的代表队</label>
+            <input id="teamSearch" type="search" placeholder="搜索国家或地区" />
+            <div class="team-grid" id="teamGrid"></div>
+          </div>
+          <p class="error" id="formError" role="alert"></p>
+          <button class="submit" type="submit">提交这一票</button>
+        </form>
+
+        <section class="success hidden" id="success" aria-live="polite">
+          <span>投票已记录</span>
+          <h3>你的立场已经进入实时结果</h3>
+          <p>本次提交计为一票。你可以分享倡议，也可以继续重复声援。</p>
+          <div class="record"><small>投票记录编号</small><strong id="recordId">#0</strong></div>
+          <div class="success-actions">
+            <button class="button primary" id="shareButton">分享倡议</button>
+            <button class="button outline" id="posterButton">下载支持海报</button>
+            <button class="text-button" id="resetButton">清空本机演示数据</button>
+          </div>
+        </section>
+      </section>
+
+      <section class="section" id="results">
+        <div class="section-heading">
+          <span>实时结果</span>
+          <h2>每一次提交都会被记录</h2>
+          <p>此独立版本的结果储存在当前浏览器。</p>
+        </div>
+        <div class="summary">
+          <div><strong id="chinaCount">0</strong><span>支持颁给中国队</span></div>
+          <div><strong id="totalCount">0</strong><span>累计投票次数</span></div>
+        </div>
+        <div class="result-list" id="resultList"></div>
+        <div class="team-board">
+          <h3>其他代表队支持排行</h3>
+          <ol id="teamRanking"></ol>
+          <p class="empty" id="emptyRanking">暂时没有其他代表队获得投票。</p>
+        </div>
+      </section>
+
+      <section class="section" id="messages">
+        <div class="section-heading">
+          <span>球迷留言板</span>
+          <h2>留下你的声音</h2>
+        </div>
+        <form class="msg-form" id="msgForm">
+          <input class="msg-nick" id="msgNick" type="text" placeholder="你的昵称（选填）" maxlength="20" />
+          <textarea class="msg-text" id="msgText" placeholder="说点什么…" maxlength="280" required></textarea>
+          <div class="msg-form-bottom">
+            <span class="msg-counter" id="msgCounter">0/280</span>
+            <button class="button primary" type="submit">发布留言</button>
+          </div>
+        </form>
+        <div class="msg-list" id="msgList"></div>
+        <div class="msg-pager" id="msgPager"></div>
+      </section>
+
+      <section class="section faq">
+        <div class="section-heading"><span>说明</span><h2>关于这次投票</h2></div>
+        <details open>
+          <summary>为什么允许一个人重复投票？</summary>
+          <p>网站记录的是持续声援强度，不是身份核验后的独立签名人数。</p>
+        </details>
+        <details>
+          <summary>不同意见会被保留吗？</summary>
+          <p>会。其他代表队的投票会单独展示，不计入中国队支持票。</p>
+        </details>
+        <details>
+          <summary>数据保存在哪里？</summary>
+          <p>这个可复制版本使用 localStorage，数据仅保存在当前浏览器。</p>
+        </details>
+        <p class="disclosure">本网站由支持者发起，与 FIFA、中国足协及任何国家或地区足球协会无隶属关系。</p>
+      </section>
+
+      <footer><strong>缺你一票</strong><span>支持世界杯奖杯直接颁给中国队</span><a href="#top">返回顶部 ↑</a></footer>
+    </main>
+    <script src="app.js"></script>
+  </body>
+</html>
