@@ -1,4 +1,8 @@
-const STORAGE_KEY = "worldCupChinaStaticVotesV2";
+// ---- Firebase ----
+const DB = "https://givetheworldcuptochinaplease-default-rtdb.asia-southeast1.firebasedatabase.app";
+const LIKES_KEY = "wcMsgLikes";
+
+// ---- teams ----
 const TEAMS = [
   ["AR","🇦🇷","阿根廷"],["AU","🇦🇺","澳大利亚"],["BE","🇧🇪","比利时"],
   ["BR","🇧🇷","巴西"],["CA","🇨🇦","加拿大"],["CH","🇨🇭","瑞士"],
@@ -98,16 +102,57 @@ function pickRandom(){
 
 let choice = "china";
 let selectedTeam = null;
+let voteData = {china:0, other:0, teams:{}, lastId:0, lastVote:"china", lastTeam:null};
+let messages = [];
 const $ = (s) => document.querySelector(s);
 const $$ = (s) => [...document.querySelectorAll(s)];
 const fmt = (n) => new Intl.NumberFormat("zh-CN").format(n);
 
-function loadData(){
-  try{return JSON.parse(localStorage.getItem(STORAGE_KEY)) || {china:0,other:0,teams:{},lastId:0,lastVote:"china",lastTeam:null};}
-  catch{return {china:0,other:0,teams:{},lastId:0,lastVote:"china",lastTeam:null};}
+// ---- Firebase data layer ----
+async function fbGet(path){
+  const r=await fetch(`${DB}/${path}.json`);
+  if(!r.ok)throw new Error(`Firebase fetch failed: ${r.status}`);
+  return r.json();
 }
-function saveData(d){localStorage.setItem(STORAGE_KEY,JSON.stringify(d));}
+async function fbPut(path,data){
+  const r=await fetch(`${DB}/${path}.json`,{method:"PUT",headers:{"Content-Type":"application/json"},body:JSON.stringify(data)});
+  return r.ok;
+}
+async function fbPost(path,data){
+  const r=await fetch(`${DB}/${path}.json`,{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify(data)});
+  return r.ok;
+}
+async function fbPatch(path,data){
+  const r=await fetch(`${DB}/${path}.json`,{method:"PATCH",headers:{"Content-Type":"application/json"},body:JSON.stringify(data)});
+  return r.ok;
+}
 
+async function loadVotes(){
+  try{
+    const d=await fbGet("votes");
+    if(d&&typeof d==="object")voteData={china:d.china||0,other:d.other||0,teams:d.teams||{},lastId:d.lastId||0,lastVote:d.lastVote||"china",lastTeam:d.lastTeam||null};
+  }catch(e){console.warn("loadVotes failed, using defaults",e);}
+}
+async function saveVotes(){
+  try{await fbPut("votes",voteData);}catch(e){console.warn("saveVotes failed",e);}
+}
+
+async function loadMessages(){
+  try{
+    const d=await fbGet("messages");
+    messages=(d&&Array.isArray(d))?d:[];
+  }catch(e){console.warn("loadMessages failed",e);messages=[];}
+}
+async function saveMessage(msg){
+  try{
+    // find index or add
+    const idx=messages.findIndex(m=>m.id===msg.id);
+    if(idx>=0)messages[idx]=msg;else messages.push(msg);
+    await fbPut("messages",messages);
+  }catch(e){console.warn("saveMessage failed",e);}
+}
+
+// ---- reasons ----
 function renderReasons(){
   $("#reasonList").innerHTML = displayedReasons.map((r,i)=>`
     <article class="reason-card">
@@ -122,7 +167,6 @@ function renderReasons(){
       </div>
     </article>`).join("");
 }
-
 function refreshReasons(){
   pickRandom();
   renderReasons();
@@ -134,6 +178,7 @@ function refreshReasons(){
   });
 }
 
+// ---- teams ----
 function renderTeams(filter=""){
   const q=filter.trim().toLowerCase();
   $("#teamGrid").innerHTML=TEAMS.filter(([,,n])=>n.toLowerCase().includes(q))
@@ -148,8 +193,10 @@ function setChoice(next){
   $("#teamPicker").classList.toggle("hidden",choice!=="other");
   $("#formError").textContent="";
 }
+
+// ---- results ----
 function renderResults(){
-  const d=loadData(), total=d.china+d.other, max=Math.max(1,d.china,d.other);
+  const d=voteData, total=d.china+d.other, max=Math.max(1,d.china,d.other);
   $("#heroChinaCount").textContent=fmt(d.china);
   $("#chinaCount").textContent=fmt(d.china);
   $("#totalCount").textContent=fmt(total);
@@ -165,18 +212,33 @@ function renderResults(){
   }).join("");
   $("#emptyRanking").classList.toggle("hidden",ranking.length>0);
 }
-function submitVote(e){
+
+// ---- voting ----
+async function submitVote(e){
   e.preventDefault();
   if(choice==="other"&&!selectedTeam){$("#formError").textContent="请先选择一支代表队。";return;}
-  const d=loadData();d[choice]+=1;d.lastId+=1;
-  d.lastVote=choice;d.lastTeam=choice==="other"?selectedTeam:null;
-  if(choice==="other")d.teams[selectedTeam]=(d.teams[selectedTeam]||0)+1;
-  saveData(d);renderResults();
-  $("#recordId").textContent=`#${fmt(d.lastId)}`;$("#success").classList.remove("hidden");
+  await loadVotes(); // refresh before writing
+  voteData[choice]+=1;voteData.lastId+=1;
+  voteData.lastVote=choice;voteData.lastTeam=choice==="other"?selectedTeam:null;
+  if(choice==="other")voteData.teams[selectedTeam]=(voteData.teams[selectedTeam]||0)+1;
+  await saveVotes();renderResults();
+  $("#recordId").textContent=`#${fmt(voteData.lastId)}`;$("#success").classList.remove("hidden");
   $("#success").scrollIntoView({behavior:"smooth",block:"center"});
 }
+
+async function autoVoteChina(){
+  await loadVotes();
+  voteData.china+=1;voteData.lastId+=1;
+  voteData.lastVote="china";voteData.lastTeam=null;
+  await saveVotes();renderResults();
+  $("#recordId").textContent=`#${fmt(voteData.lastId)}`;
+  $("#success").classList.remove("hidden");
+  $("#success").scrollIntoView({behavior:"smooth",block:"center"});
+}
+
+// ---- share ----
 async function share(){
-  const d=loadData();let text;
+  const d=voteData;let text;
   if(d.lastVote==="other"&&d.lastTeam){
     const t=TEAMS.find(x=>x[0]===d.lastTeam);
     text=`我支持世界杯奖杯颁给${t?t[2]:d.lastTeam}。缺你一票。`;
@@ -187,8 +249,10 @@ async function share(){
   await navigator.clipboard.writeText(`${text} ${location.href}`);
   alert("分享文案和链接已复制。");
 }
+
+// ---- poster ----
 function downloadPoster(){
-  const d=loadData(),canvas=document.createElement("canvas"),ctx=canvas.getContext("2d");
+  const d=voteData,canvas=document.createElement("canvas"),ctx=canvas.getContext("2d");
   const W=1080,H=1350;canvas.width=W;canvas.height=H;
   const isChina=d.lastVote==="china"||!d.lastTeam;
   let teamName="中国队",teamFlag="🇨🇳";
@@ -252,31 +316,22 @@ function downloadPoster(){
 }
 
 // ---- message board ----
-const MSG_KEY = "worldCupChinaMessagesV1";
-const LIKES_KEY = "worldCupChinaMsgLikesV1";
 const MSG_PER_PAGE = 10;
 let msgPage = 1;
-
-function loadMessages(){
-  try{return JSON.parse(localStorage.getItem(MSG_KEY)) || [];}
-  catch{return [];}
-}
-function saveMessages(arr){localStorage.setItem(MSG_KEY,JSON.stringify(arr));}
-function loadLikes(){
+function loadMsgLikes(){
   try{return JSON.parse(localStorage.getItem(LIKES_KEY)) || {};}
   catch{return {};}
 }
-function saveLikes(obj){localStorage.setItem(LIKES_KEY,JSON.stringify(obj));}
+function saveMsgLikes(obj){localStorage.setItem(LIKES_KEY,JSON.stringify(obj));}
 
 function renderMessages(){
-  const all=loadMessages();
-  // sort: most liked first, then newest first
+  const all=[...messages];
   all.sort((a,b)=>b.likes-a.likes||b.id-a.id);
   const totalPages=Math.ceil(all.length/MSG_PER_PAGE)||1;
   if(msgPage>totalPages)msgPage=totalPages;
   const start=(msgPage-1)*MSG_PER_PAGE;
   const page=all.slice(start,start+MSG_PER_PAGE);
-  const likes=loadLikes();
+  const likes=loadMsgLikes();
 
   if(all.length===0){
     $("#msgList").innerHTML=`<div class="msg-empty">还没有留言，来做第一个发声的球迷吧 ⚽</div>`;
@@ -289,7 +344,7 @@ function renderMessages(){
     return `<div class="msg-item">
       <div class="msg-item-header">
         <span class="msg-nickname">${esc(m.nick||"匿名球迷")}</span>
-        <span class="msg-time">${fmtTime(m.time)}</span>
+        <span class="msg-time">${fmtTime(m.time||m.ts)}</span>
       </div>
       <p class="msg-body">${esc(m.text)}</p>
       <div class="msg-footer">
@@ -300,7 +355,6 @@ function renderMessages(){
     </div>`;
   }).join("");
 
-  // pager
   let pagerHTML="";
   pagerHTML+=`<button ${msgPage===1?"disabled":""} data-page="${msgPage-1}">◀</button>`;
   for(let i=1;i<=totalPages;i++){
@@ -309,7 +363,6 @@ function renderMessages(){
   pagerHTML+=`<button ${msgPage===totalPages?"disabled":""} data-page="${msgPage+1}">▶</button>`;
   $("#msgPager").innerHTML=pagerHTML;
 
-  // bind pager clicks
   $$("#msgPager button").forEach(b=>b.addEventListener("click",()=>{
     if(b.disabled)return;
     msgPage=parseInt(b.dataset.page);
@@ -317,23 +370,20 @@ function renderMessages(){
     $("#messages").scrollIntoView({behavior:"smooth",block:"start"});
   }));
 
-  // bind like clicks
-  $$(".msg-like").forEach(b=>b.addEventListener("click",()=>{
+  $$(".msg-like").forEach(b=>b.addEventListener("click",async ()=>{
     const mid=parseInt(b.dataset.msgid);
-    const lks=loadLikes();
-    const msgs=loadMessages();
-    const msg=msgs.find(m=>m.id===mid);
+    const lks=loadMsgLikes();
+    const msg=messages.find(m=>m.id===mid);
     if(!msg)return;
     if(lks[mid]){
-      // unlike
       delete lks[mid];
       msg.likes=Math.max(0,msg.likes-1);
     }else{
       lks[mid]=true;
       msg.likes+=1;
     }
-    saveLikes(lks);
-    saveMessages(msgs);
+    saveMsgLikes(lks);
+    await saveMessage(msg);
     renderMessages();
   }));
 }
@@ -343,43 +393,38 @@ function esc(str){
   d.textContent=str;
   return d.innerHTML;
 }
-
 function fmtTime(ts){
-  const d=new Date(ts);
-  const now=new Date();
-  const diff=now-d;
+  if(!ts)return "";
+  const d=new Date(ts),now=new Date(),diff=now-d;
   if(diff<60000)return "刚刚";
   if(diff<3600000)return Math.floor(diff/60000)+" 分钟前";
   if(diff<86400000)return Math.floor(diff/3600000)+" 小时前";
   return d.toLocaleDateString("zh-CN",{month:"short",day:"numeric"});
 }
-
-function postMessage(text,nick){
-  const msgs=loadMessages();
-  const id=msgs.length?Math.max(...msgs.map(m=>m.id))+1:1;
-  msgs.push({id,text: text.trim(),nick: nick.trim()||"",likes:0,time:Date.now()});
-  saveMessages(msgs);
+async function postMessage(text,nick){
+  const id=messages.length?Math.max(...messages.map(m=>m.id))+1:1;
+  const msg={id,text:text.trim(),nick:nick.trim()||"",likes:0,ts:Date.now()};
+  await saveMessage(msg);
   msgPage=1;
   renderMessages();
 }
 
-document.addEventListener("DOMContentLoaded",()=>{
+// ---- init ----
+async function init(){
+  await loadVotes();
+  await loadMessages();
   pickRandom();
   renderReasons();
   renderTeams();
   renderResults();
+  renderMessages();
+
   $$(".choice").forEach(b=>b.addEventListener("click",()=>setChoice(b.dataset.choice)));
-  $$("[data-go-vote]").forEach(b=>b.addEventListener("click",()=>{
+  $$("[data-go-vote]").forEach(b=>b.addEventListener("click",async ()=>{
     const v=b.dataset.goVote;
     setChoice(v);
     if(v==="china"){
-      // auto-submit for china
-      const d=loadData();d.china+=1;d.lastId+=1;
-      d.lastVote="china";d.lastTeam=null;
-      saveData(d);renderResults();
-      $("#recordId").textContent=`#${fmt(d.lastId)}`;
-      $("#success").classList.remove("hidden");
-      $("#success").scrollIntoView({behavior:"smooth",block:"center"});
+      await autoVoteChina();
     }else{
       $("#vote").scrollIntoView({behavior:"smooth"});
     }
@@ -389,20 +434,37 @@ document.addEventListener("DOMContentLoaded",()=>{
   $("#shareButton").addEventListener("click",share);
   $("#posterButton").addEventListener("click",downloadPoster);
   $("#refreshReasons").addEventListener("click",refreshReasons);
-  $("#resetButton").addEventListener("click",()=>{if(confirm("确定清空当前浏览器中的演示投票数据？")){localStorage.removeItem(STORAGE_KEY);$("#success").classList.add("hidden");renderResults();}});
-  // message board
-  renderMessages();
-  $("#msgText").addEventListener("input",()=>{
-    const len=$("#msgText").value.length;
-    $("#msgCounter").textContent=len+"/280";
+  $("#resetButton").addEventListener("click",async ()=>{
+    if(confirm("确定清空当前浏览器中的演示投票数据？此操作不影响云端数据。")){
+      voteData={china:0,other:0,teams:{},lastId:0,lastVote:"china",lastTeam:null};
+      await saveVotes();
+      messages=[];
+      await fbPut("messages",[]);
+      $("#success").classList.add("hidden");
+      renderResults();renderMessages();
+    }
   });
-  $("#msgForm").addEventListener("submit",e=>{
+  // message form
+  $("#msgText").addEventListener("input",()=>{
+    $("#msgCounter").textContent=$("#msgText").value.length+"/280";
+  });
+  $("#msgForm").addEventListener("submit",async e=>{
     e.preventDefault();
     const text=$("#msgText").value.trim();
     if(!text)return;
-    postMessage(text,$("#msgNick").value);
+    await postMessage(text,$("#msgNick").value);
     $("#msgText").value="";
     $("#msgNick").value="";
     $("#msgCounter").textContent="0/280";
   });
-});
+
+  // poll for real-time updates every 8 seconds
+  setInterval(async ()=>{
+    await loadVotes();
+    renderResults();
+    await loadMessages();
+    renderMessages();
+  },8000);
+}
+
+document.addEventListener("DOMContentLoaded",init);
