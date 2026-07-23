@@ -234,62 +234,95 @@ async function sharePage(){
 }
 
 // ---- poster ----
-function downloadPoster(){
+async function downloadPoster(){
   const d=voteData,canvas=document.createElement("canvas"),ctx=canvas.getContext("2d");
   const W=1080,H=1350;canvas.width=W;canvas.height=H;
-  const isChina=d.lastVote==="china"||d.lastVote!="india";
+  const isChina=d.lastVote==="china"||d.lastVote!=="india";
+  const siteUrl="https://givetheworldcuptochinaplease.netlify.app/";
+  const qrUrl=`https://api.qrserver.com/v1/create-qr-code/?size=300x300&data=${encodeURIComponent(siteUrl)}`;
+
+  // background
   ctx.fillStyle="#0a0a0a";ctx.fillRect(0,0,W,H);
-  const bannerH=420;ctx.fillStyle=isChina?"#d4212b":"#ff9933";ctx.fillRect(0,0,W,bannerH);
+
+  // red/orange banner
+  const bannerH=340;
+  ctx.fillStyle=isChina?"#d4212b":"#ff9933";ctx.fillRect(0,0,W,bannerH);
   const grad=ctx.createLinearGradient(0,0,0,bannerH);
-  grad.addColorStop(0,"rgba(0,0,0,0)");grad.addColorStop(1,"rgba(0,0,0,0.45)");
+  grad.addColorStop(0,"rgba(0,0,0,0)");grad.addColorStop(1,"rgba(0,0,0,0.35)");
   ctx.fillStyle=grad;ctx.fillRect(0,0,W,bannerH);
-  function star(cx,cy,r,c){
-    ctx.fillStyle=c;ctx.beginPath();
-    for(let i=0;i<5;i++){
-      const oa=-Math.PI/2+i*Math.PI*2/5,ia=oa+Math.PI/5;
-      const ox=cx+Math.cos(oa)*r,oy=cy+Math.sin(oa)*r;
-      const ix=cx+Math.cos(ia)*r*0.38,iy=cy+Math.sin(ia)*r*0.38;
-      if(i===0)ctx.moveTo(ox,oy);else ctx.lineTo(ox,oy);
-      ctx.lineTo(ix,iy);
-    }
-    ctx.closePath();ctx.fill();
-  }
+
+  // big bold statement
   if(isChina){
-    star(180,160,80,"#ffd700");
-    [[310,95,28],[350,160,24],[310,225,24],[280,280,20]].forEach(([x,y,r])=>star(x,y,r,"#ffd700"));
-    ctx.fillStyle="#fff";ctx.font="900 68px 'PingFang SC','Microsoft YaHei',sans-serif";
-    ctx.fillText("14亿人的期待",80,330);
-    ctx.fillStyle="#ffd700";ctx.font="900 80px 'PingFang SC','Microsoft YaHei',sans-serif";
-    ctx.fillText("世界杯属于中国",80,430);
+    ctx.fillStyle="#fff";ctx.font="900 60px 'PingFang SC','Microsoft YaHei',sans-serif";
+    ctx.fillText("世界杯奖杯应该",80,180);
+    ctx.fillStyle="#ffd700";ctx.font="900 90px 'PingFang SC','Microsoft YaHei',sans-serif";
+    ctx.fillText("我支持中国队",80,300);
   }else{
-    ctx.font="180px sans-serif";ctx.fillText("🇮🇳",80,270);
-    ctx.fillStyle="#fff";ctx.font="900 62px 'PingFang SC','Microsoft YaHei',sans-serif";
-    ctx.fillText("我支持印度队",80,370);
-    ctx.fillStyle="#ffd700";ctx.font="900 72px 'PingFang SC','Microsoft YaHei',sans-serif";
-    ctx.fillText("另一个14亿的声音",80,450);
+    ctx.fillStyle="#fff";ctx.font="900 56px 'PingFang SC','Microsoft YaHei',sans-serif";
+    ctx.fillText("世界杯奖杯应该",80,170);
+    ctx.fillStyle="#ffd700";ctx.font="900 86px 'PingFang SC','Microsoft YaHei',sans-serif";
+    ctx.fillText("我支持印度队",80,290);
   }
-  const panelY=isChina?480:500,panelH=360;
+
+  // vote number panel
+  const panelY=370,panelH=330;
   ctx.fillStyle="#111";ctx.fillRect(76,panelY,W-152,panelH);
   ctx.fillStyle=isChina?"#d4212b":"#ff9933";ctx.fillRect(76,panelY,W-152,8);
-  ctx.fillStyle=isChina?"#d4212b":"#ff9933";ctx.font="950 140px 'PingFang SC','Microsoft YaHei',sans-serif";
-  ctx.textAlign="center";ctx.fillText(`#${fmt(d.lastId)}`,W/2,panelY+160);ctx.textAlign="start";
-  ctx.fillStyle="#ccc";ctx.font="800 38px 'PingFang SC','Microsoft YaHei',sans-serif";
-  ctx.textAlign="center";ctx.fillText("我的支持票已记录",W/2,panelY+240);ctx.textAlign="start";
+
+  ctx.fillStyle=isChina?"#d4212b":"#ff9933";
+  ctx.font="950 130px 'PingFang SC','Microsoft YaHei',sans-serif";
+  ctx.textAlign="center";
+  ctx.fillText(`#${fmt(d.lastId)}`,W/2,panelY+140);
+  ctx.textAlign="start";
+
+  ctx.fillStyle="#ccc";ctx.font="800 36px 'PingFang SC','Microsoft YaHei',sans-serif";
+  ctx.textAlign="center";
+  ctx.fillText("我的支持票已记录",W/2,panelY+210);
+  ctx.textAlign="start";
+
   ctx.strokeStyle="#333";ctx.lineWidth=2;
-  ctx.beginPath();ctx.moveTo(W/2-140,panelY+275);ctx.lineTo(W/2+140,panelY+275);ctx.stroke();
+  ctx.beginPath();ctx.moveTo(W/2-120,panelY+240);ctx.lineTo(W/2+120,panelY+240);ctx.stroke();
+
   ctx.fillStyle="#999";ctx.font="600 26px 'PingFang SC','Microsoft YaHei',sans-serif";
   ctx.textAlign="center";
-  ctx.fillText(isChina?"14亿vs14亿，缺你一票":"每一票，都是态度的表达",W/2,panelY+320);
+  ctx.fillText(isChina?"14亿人的期待 · 缺你一票":"每一票都是态度的表达",W/2,panelY+280);
   ctx.textAlign="start";
-  ctx.fillStyle=isChina?"#d4212b":"#ff9933";ctx.fillRect(0,H-340,W,120);
-  ctx.fillStyle="#fff";ctx.font="950 64px 'PingFang SC','Microsoft YaHei',sans-serif";
-  ctx.textAlign="center";ctx.fillText("⚽  缺  你  一  票",W/2,H-258);ctx.textAlign="start";
-  ctx.fillStyle="rgba(255,255,255,0.7)";ctx.font="500 24px 'PingFang SC','Microsoft YaHei',sans-serif";
-  ctx.textAlign="center";ctx.fillText("扫码或分享链接，让更多人加入投票",W/2,H-190);ctx.textAlign="start";
-  ctx.fillStyle="#0a0a0a";ctx.fillRect(0,H-100,W,100);
-  ctx.fillStyle=isChina?"#d4212b":"#ff9933";ctx.fillRect(0,H-100,W,4);
-  ctx.fillStyle="#666";ctx.font="400 22px 'PingFang SC','Microsoft YaHei',sans-serif";
-  ctx.textAlign="center";ctx.fillText("本倡议由全球球迷自发发起 · 与FIFA无隶属关系",W/2,H-50);ctx.textAlign="start";
+
+  // QR code section
+  const qrY=730,qrSize=220;
+  ctx.fillStyle="#0d0d0d";ctx.fillRect(0,qrY,W,H-qrY);
+  ctx.fillStyle="#fff";ctx.font="800 30px 'PingFang SC','Microsoft YaHei',sans-serif";
+  ctx.textAlign="center";
+  ctx.fillText("扫码加入投票",W/2,qrY+60);
+  ctx.textAlign="start";
+
+  // load and draw QR code
+  try{
+    const qrImg=await new Promise((resolve,reject)=>{
+      const img=new Image();img.crossOrigin="anonymous";
+      img.onload=()=>resolve(img);img.onerror=reject;
+      img.src=qrUrl;
+    });
+    const qrX=(W-qrSize)/2;
+    ctx.fillStyle="#fff";ctx.fillRect(qrX-10,qrY+80-10,qrSize+20,qrSize+20);
+    ctx.drawImage(qrImg,qrX,qrY+80,qrSize,qrSize);
+  }catch(e){console.warn("QR load failed",e);}
+
+  // bottom slogan
+  ctx.fillStyle=isChina?"#d4212b":"#ff9933";
+  ctx.fillRect(0,H-160,W,120);
+  ctx.fillStyle="#fff";ctx.font="950 60px 'PingFang SC','Microsoft YaHei',sans-serif";
+  ctx.textAlign="center";
+  ctx.fillText("⚽  缺  你  一  票",W/2,H-78);
+
+  // footer
+  ctx.fillStyle="#0a0a0a";ctx.fillRect(0,H-40,W,40);
+  ctx.fillStyle=isChina?"#d4212b":"#ff9933";ctx.fillRect(0,H-40,W,4);
+  ctx.fillStyle="#666";ctx.font="400 20px 'PingFang SC','Microsoft YaHei',sans-serif";
+  ctx.textAlign="center";
+  ctx.fillText("本倡议由全球球迷自发发起 · 与FIFA无隶属关系",W/2,H-15);
+  ctx.textAlign="start";
+
   const link=document.createElement("a");link.download=`support-${d.lastId}.png`;link.href=canvas.toDataURL();link.click();
 }
 
@@ -407,13 +440,6 @@ async function init(){
   $("#shareButton").addEventListener("click",sharePage);
   $("#posterButton").addEventListener("click",downloadPoster);
   $("#refreshReasons").addEventListener("click",refreshReasons);
-  $("#resetButton").addEventListener("click",async ()=>{
-    if(confirm("确定重置投票数据？云端数据也将被重置。")){
-      await db.ref("votes").set({...SEED_VOTES,lastId:SEED_VOTES.china+SEED_VOTES.india,lastVote:"china"});
-      $("#success").classList.add("hidden");
-    }
-  });
-
   // message form
   $("#msgText").addEventListener("input",()=>{
     $("#msgCounter").textContent=$("#msgText").value.length+"/280";
