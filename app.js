@@ -319,18 +319,15 @@ async function makeViralCard(){
   ctx.textAlign="center";
   ctx.fillText(t("viralHeadline2"),W/2,390);ctx.textAlign="start";
 
-  // ---- subtle gold line ----
-  ctx.strokeStyle="rgba(255,215,0,0.4)";ctx.lineWidth=1;
-  ctx.beginPath();ctx.moveTo(W/2-60,440);ctx.lineTo(W/2+60,440);ctx.stroke();
-
-  // ---- vote count ----
-  ctx.fillStyle="rgba(255,255,255,0.9)";ctx.font="700 40px 'PingFang SC','Microsoft YaHei',sans-serif";
+  // ---- vote count (prominent) ----
+  ctx.fillStyle="rgba(255,255,255,0.15)";ctx.fillRect(120,450,W-240,90);
+  ctx.fillStyle="#fff";ctx.font="900 60px 'PingFang SC','Microsoft YaHei',sans-serif";
   ctx.textAlign="center";
-  ctx.fillText(t("viralSupport").replace("{n}",fmt(d.china)),W/2,520);
+  ctx.fillText(t("viralSupport").replace("{n}",fmt(d.china)),W/2,515);
   ctx.textAlign="start";
 
   // ---- QR code ----
-  const qrSize=210,qrY=600;
+  const qrSize=210,qrY=610;
   // white bg with subtle shadow
   ctx.fillStyle="rgba(0,0,0,0.3)";ctx.fillRect((W-qrSize)/2-2,qrY+2,qrSize+20,qrSize+24);
   ctx.fillStyle="#fff";ctx.fillRect((W-qrSize)/2-12,qrY-12,qrSize+24,qrSize+24);
