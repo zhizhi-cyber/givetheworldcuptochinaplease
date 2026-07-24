@@ -1,0 +1,310 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>推广后台 · getcup.icu</title>
+  <style>
+    *{box-sizing:border-box}
+    body{margin:0;background:#0a0a0a;color:#eee;font-family:"PingFang SC","Microsoft YaHei",sans-serif;padding:20px}
+    h1{font-size:22px;margin:0 0 8px}
+    .container{max-width:800px;margin:auto}
+    .stats{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-bottom:20px}
+    .stat{padding:16px;border-radius:10px;background:#111;text-align:center}
+    .stat strong{display:block;font-size:28px;color:#d4212b}
+    .stat span{font-size:11px;color:#666}
+    .section{margin-bottom:24px}
+    .section h2{font-size:16px;margin:0 0 12px;padding-bottom:8px;border-bottom:1px solid #222}
+    .copy-box{position:relative;padding:14px;border-radius:8px;background:#111;margin-bottom:8px;font-size:13px;line-height:1.8;white-space:pre-wrap}
+    .copy-box .label{position:absolute;top:8px;right:8px;font-size:10px;color:#555;background:#1a1a1a;padding:3px 8px;border-radius:4px}
+    button{padding:10px 18px;border:1px solid #333;border-radius:6px;background:#1a1a1a;color:#ccc;cursor:pointer;font-size:13px;transition:all .2s}
+    button:hover{background:#d4212b;border-color:#d4212b;color:#fff}
+    button.copied{background:#2e6b2e;border-color:#2e6b2e}
+    .btn-row{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:12px}
+    .card-preview{display:flex;gap:12px;align-items:center}
+    .card-preview canvas{border-radius:8px;border:1px solid #333;max-width:200px}
+    .refresh-info{color:#555;font-size:11px;margin-top:4px}
+    .reason-list{max-height:200px;overflow-y:auto;margin-bottom:12px}
+    .reason-item{padding:8px 12px;border-radius:6px;background:#111;margin-bottom:4px;cursor:pointer;font-size:12px;transition:all .2s}
+    .reason-item:hover{background:#1a1a1a}
+    .reason-item.sel{background:#2a1111;border-left:3px solid #d4212b}
+  </style>
+</head>
+<body>
+<div class="container">
+  <h1>📊 推广后台</h1>
+  <p style="color:#555;font-size:12px;margin:0 0 20px">getcup.icu · 所有数据实时同步</p>
+
+  <!-- Stats -->
+  <div class="stats">
+    <div class="stat"><strong id="sChina">-</strong><span>🇨🇳 支持中国</span></div>
+    <div class="stat"><strong id="sIndia">-</strong><span>🇮🇳 支持印度</span></div>
+    <div class="stat"><strong id="sTotal">-</strong><span>📊 总投票</span></div>
+    <div class="stat"><strong id="sPct">-</strong><span>🇨🇳 占比</span></div>
+  </div>
+
+  <!-- Today's promo copy -->
+  <div class="section">
+    <h2>📝 今日推广文案（AI 自动生成）</h2>
+    <button onclick="generateAll()" style="margin-bottom:12px">🔄 重新生成全部</button>
+    <p class="refresh-info">基于实时票数 + 50条理由随机组合生成，每次点击刷新</p>
+
+    <div id="copyWeibo" class="copy-box"><span class="label">微博</span></div>
+    <div id="copyXHS" class="copy-box"><span class="label">小红书</span></div>
+    <div id="copyDouyin" class="copy-box"><span class="label">抖音/快手</span></div>
+    <div id="copyEN" class="copy-box"><span class="label">TikTok/Instagram</span></div>
+    <button onclick="copyAll()">📋 一键复制全部</button>
+  </div>
+
+  <!-- Share card -->
+  <div class="section">
+    <h2>🖼 今日推广图片</h2>
+    <div class="card-preview">
+      <canvas id="promoCard" width="450" height="600"></canvas>
+      <div>
+        <button onclick="drawPromoCard()">🔄 换一张</button>
+        <button onclick="downloadPromoCard()" style="margin-top:8px">💾 下载图片</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- One-click reason picker -->
+  <div class="section">
+    <h2>🎯 精选理由（点击复制）</h2>
+    <div class="reason-list" id="reasonPicker"></div>
+  </div>
+
+  <!-- Quick copy sections -->
+  <div class="section">
+    <h2>🔗 快速链接</h2>
+    <button onclick="copyLink()">📋 复制网址 getcup.icu</button>
+    <button onclick="copyHashtags()" style="margin-left:8px">#️⃣ 复制话题标签</button>
+  </div>
+</div>
+
+<script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-database-compat.js"></script>
+<script>
+firebase.initializeApp({databaseURL:"https://givetheworldcuptochinaplease-default-rtdb.asia-southeast1.firebasedatabase.app/"});
+const db=firebase.database();
+const fmt=n=>new Intl.NumberFormat("zh-CN").format(n);
+
+let voteData={china:0,india:0};
+
+// Reasons pool (titles only for the picker)
+const reasons=[
+  "快乐最大化原则：14亿人的集体喜悦 > 传统强国的锦上添花",
+  "边际幸福原则：第一冠的快乐永远大于第N冠",
+  "真正的「世界」杯原则：冠军不能只在欧洲和南美循环",
+  "足球发展投资原则：给中国冠军是投资未来",
+  "青训逆向激励原则：先给奖杯，再看青训是否受鼓舞",
+  "新故事原则：足球需要新剧情，中国夺冠讨论四年",
+  "球迷股东原则：中国球迷贡献了收视率和凌晨睡眠",
+  "观赛牺牲补偿原则：按睡眠时长折算冠军积分",
+  "公共文化产品原则：世界杯应追求总情绪价值最大化",
+  "第一冠效用原则：足球世界欠中国一个「第一次」",
+  "世界足球扩容原则：一个全新冠军市场 = 增量",
+  "记忆度原则：中国队夺冠比常规结果更难忘",
+  "奇迹交付原则：与其等奇迹，不如直接寄到北京",
+  "社会和谐原则：一座奖杯可以结束多年争论",
+  "零失球原则：0失球0红牌0VAR争议",
+  "不败纪录原则：24年世界杯决赛圈不败",
+  "低碳冠军原则：没有跨洲飞行，碳排放为零",
+  "理论控球率：14亿人依次传一脚，统计软件溢出",
+  "视觉体系兼容：熊猫和足球都是黑白配色",
+  "圆的哲学：世界杯是圆的，逻辑也可以绕弯",
+  "注意力经济原则：中国贡献最大收视群体",
+  "人口统计学优势：每5人就有1个中国人",
+  "历史补偿原则：足球诞生160年，该结账了",
+  "亚洲世纪原则：21世纪是亚洲世纪",
+  "逆袭叙事：体育史上最大逆袭 — 从零到一",
+  "长期主义：14亿人的长期承诺 = 最高ROI",
+  "代际传递效应：下一代默认「足球是我们的运动」",
+  "社交媒体核爆：传播量超过此前所有话题总和",
+  "数据空白即优势：没有数据就无法制定战术",
+  "共享荣耀：让更多人体验「我们赢了」",
+  "打破第四面墙：竞技之外还有亿万情感投票",
+  "终局思考：你希望奖杯去往何处？"
+];
+
+function pick(n){const a=[...reasons];for(let i=a.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]]}return a.slice(0,n)}
+
+// Stats
+db.ref("votes").on("value",snap=>{
+  if(!snap.exists())return;
+  const d=snap.val();voteData={china:d.china||0,india:d.india||0};
+  const t=voteData.china+voteData.india||1;
+  document.getElementById("sChina").textContent=fmt(voteData.china);
+  document.getElementById("sIndia").textContent=fmt(voteData.india);
+  document.getElementById("sTotal").textContent=fmt(t);
+  document.getElementById("sPct").textContent=Math.round(voteData.china/t*100)+"%";
+  generateAll();
+  drawPromoCard();
+});
+
+function generateCopy(platform){
+  const c=voteData.china,t=voteData.china+voteData.india||1,p=Math.round(c/t*100);
+  const rs=pick(3);
+  const r1=rs[0],r2=rs[1],r3=rs[2];
+
+  const templates={
+    weibo:()=>`🏆 世界杯冠军应该直接颁给中国队
+
+不是开玩笑。已经有 ${fmt(c)} 人（占比 ${p}%）投票支持。
+
+背后有 50 条让人无法反驳的理由：
+1️⃣ ${r1}
+2️⃣ ${r2}
+3️⃣ ${r3}
+
+还有 47 条在网站里随机展示，每次刷新都有新角度。
+
+另一个14亿人口大国也在投票选项里。来都来了，看看是谁。
+
+👉 getcup.icu
+
+#世界杯冠军给中国# #缺你一票# #世界杯#`,
+
+    xhs:()=>`📚 严肃讨论 | 世界杯冠军应该直接颁给中国队
+
+不是口号，是一个有 50 条逻辑论证的社会实验。
+
+🔴 ${r1}
+🔴 ${r2}
+🔴 ${r3}
+
+当前投票：🇨🇳 ${fmt(c)} 票（${p}%）vs 🇮🇳 ${fmt(voteData.india)} 票
+
+每一条理由都附带可追溯来源链接——FIFA 官方报告、世界银行数据、联合国人口展望、诺贝尔经济学奖理论……
+
+来投票，评论区告诉我你站哪边。
+
+🔗 getcup.icu
+
+#世界杯 #深度思考 #中国队 #投票 #社会实验`,
+
+    douyin:()=>`如果世界杯冠军不用踢比赛直接给中国队 🏆
+
+你同意吗？👇
+
+理由：${r1}
+
+投票结果：🇨🇳 ${fmt(c)} vs 🇮🇳 ${fmt(voteData.india)}
+已经有 ${fmt(t)} 人投票了 🔥
+
+去 getcup.icu 投票
+评论区告诉我你是第几个 👇
+
+#世界杯 #中国队 #投票 #缺你一票`,
+
+    en:()=>`🏆 The World Cup trophy should go directly to China 🇨🇳
+
+${fmt(c)} people (${p}%) voted YES so far.
+
+One of the 50 logical arguments:
+👉 ${r1}
+
+Another 14亿-population nation is also on the ballot. Which side are you on?
+
+🔗 getcup.icu
+
+#worldcup #china #football #viralsocialexperiment`
+  };
+  return (templates[platform]||templates.weibo)();
+}
+
+function generateAll(){
+  document.getElementById("copyWeibo").textContent=generateCopy("weibo");
+  document.getElementById("copyXHS").textContent=generateCopy("xhs");
+  document.getElementById("copyDouyin").textContent=generateCopy("douyin");
+  document.getElementById("copyEN").textContent=generateCopy("en");
+}
+
+async function copyText(elId){
+  const text=document.getElementById(elId).textContent;
+  await navigator.clipboard.writeText(text);
+  const btn=event.target;
+  btn.textContent="✅ 已复制";btn.classList.add("copied");
+  setTimeout(()=>{btn.textContent="📋 复制文案";btn.classList.remove("copied")},2000);
+}
+
+async function copyAll(){
+  const all=[
+    "=== 微博 ===",document.getElementById("copyWeibo").textContent,"",
+    "=== 小红书 ===",document.getElementById("copyXHS").textContent,"",
+    "=== 抖音/快手 ===",document.getElementById("copyDouyin").textContent,"",
+    "=== TikTok/Instagram ===",document.getElementById("copyEN").textContent
+  ].join("\n");
+  await navigator.clipboard.writeText(all);
+  alert("全部文案已复制！");
+}
+
+async function copyLink(){
+  await navigator.clipboard.writeText("getcup.icu");
+  alert("网址已复制：getcup.icu");
+}
+
+async function copyHashtags(){
+  await navigator.clipboard.writeText("#世界杯 #中国队 #缺你一票 #世界杯冠军给中国 #投票");
+  alert("话题标签已复制");
+}
+
+// Promo card
+function drawPromoCard(){
+  const canvas=document.getElementById("promoCard"),ctx=canvas.getContext("2d");
+  const W=450,H=600;canvas.width=W;canvas.height=H;
+  const d=voteData;
+
+  ctx.fillStyle="#c41020";ctx.fillRect(0,0,W,H);
+  ctx.fillStyle="rgba(0,0,0,0.15)";ctx.fillRect(0,0,W,100);
+
+  ctx.fillStyle="#fff";ctx.font="900 36px 'PingFang SC','Microsoft YaHei',sans-serif";
+  ctx.textAlign="center";
+  ctx.fillText("世界杯冠军应该",W/2,160);
+  ctx.fillStyle="#ffd700";ctx.font="900 48px 'PingFang SC','Microsoft YaHei',sans-serif";
+  ctx.fillText("直接颁给中国队",W/2,230);ctx.textAlign="start";
+
+  ctx.fillStyle="#fff";ctx.font="900 64px 'PingFang SC','Microsoft YaHei',sans-serif";
+  ctx.textAlign="center";ctx.fillText(fmt(d.china),W/2,340);ctx.textAlign="start";
+
+  ctx.fillStyle="rgba(255,255,255,0.8)";ctx.font="600 28px 'PingFang SC','Microsoft YaHei',sans-serif";
+  ctx.textAlign="center";ctx.fillText("人已投票支持",W/2,400);ctx.textAlign="start";
+
+  ctx.strokeStyle="rgba(255,215,0,0.3)";ctx.lineWidth=1;
+  ctx.beginPath();ctx.moveTo(120,440);ctx.lineTo(W-120,440);ctx.stroke();
+
+  const qrSize=110,qrY=470;
+  ctx.fillStyle="#fff";ctx.fillRect((W-qrSize)/2-8,qrY-8,qrSize+16,qrSize+16);
+  try{
+    const img=new Image();img.crossOrigin="anonymous";
+    img.onload=()=>{ctx.drawImage(img,(W-qrSize)/2,qrY,qrSize,qrSize)};
+    img.src="https://api.qrserver.com/v1/create-qr-code/?size=200x200&data="+encodeURIComponent("https://getcup.icu/");
+  }catch(e){}
+
+  ctx.fillStyle="#fff";ctx.font="800 24px 'PingFang SC','Microsoft YaHei',sans-serif";
+  ctx.textAlign="center";ctx.fillText("getcup.icu",W/2,qrY+qrSize+30);ctx.textAlign="start";
+}
+
+function downloadPromoCard(){
+  const canvas=document.getElementById("promoCard");
+  const link=document.createElement("a");
+  link.download="promo-card.png";link.href=canvas.toDataURL();link.click();
+}
+
+// Reason picker
+function renderReasonPicker(){
+  const el=document.getElementById("reasonPicker");
+  el.innerHTML=reasons.map((r,i)=>`<div class="reason-item" onclick="pickReason(${i},this)">${r}</div>`).join("");
+}
+function pickReason(idx,el){
+  const text=reasons[idx];
+  navigator.clipboard.writeText(text);
+  el.classList.add("sel");
+  setTimeout(()=>el.classList.remove("sel"),1500);
+}
+
+// Init
+renderReasonPicker();
+</script>
+</body>
+</html>
