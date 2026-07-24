@@ -39,8 +39,9 @@ const T = {
   posterBottom: { zh:"⚽  缺  你  一  票", en:"⚽  Your Vote Matters" },
   posterFooter: { zh:"本倡议由全球球迷自发发起 · 与FIFA无隶属关系", en:"Initiated by global football fans · Not affiliated with FIFA" },
   // Viral card
-  viralHeadline:{ zh:"支持世界杯冠军应该直接颁给中国队", en:"Support the World Cup Trophy Going Directly to China" },
-  viralSupport: { zh:"已有 {n} 人投票支持", en:"{n} people have voted" },
+  viralHeadline1:{ zh:"世界杯冠军应该", en:"The World Cup Trophy Should" },
+  viralHeadline2:{ zh:"直接颁给中国队", en:"Go Directly to China" },
+  viralSupport:  { zh:"{n} 人已投票", en:"{n} people have voted" },
   reasonHeading:{ zh:"支持直接颁给中国队", en:"Why the Trophy Should Go to China" },
   voteHeading:  { zh:"记录你的立场", en:"Make Your Voice Heard" },
   voteSubheading:{ zh:"支持直接颁给中国队，或选择另一个 14 亿人口大国表达不同立场。支持重复声援。", en:"Support China directly, or choose the other 1.4-billion-population nation. Repeat voting is allowed." },
@@ -296,32 +297,43 @@ async function makeViralCard(){
   const canvas=document.createElement("canvas"),ctx=canvas.getContext("2d");
   const W=900,H=1200;canvas.width=W;canvas.height=H;
 
-  // ---- red bg ----
+  // ---- red bg with subtle grain ----
   ctx.fillStyle="#c41020";ctx.fillRect(0,0,W,H);
+  const grad=ctx.createLinearGradient(0,0,0,H);
+  grad.addColorStop(0,"rgba(0,0,0,0.15)");
+  grad.addColorStop(0.5,"rgba(0,0,0,0)");
+  grad.addColorStop(1,"rgba(0,0,0,0.1)");
+  ctx.fillStyle=grad;ctx.fillRect(0,0,W,H);
 
-  // ---- 1. headline ----
-  ctx.fillStyle="#fff";ctx.font="900 52px 'PingFang SC','Microsoft YaHei',sans-serif";
-  ctx.textAlign="center";
-  const headline=t("viralHeadline");
-  // word wrap if needed
-  const maxW=W-120;
-  let fontSize=52;
-  ctx.font=`900 ${fontSize}px 'PingFang SC','Microsoft YaHei',sans-serif`;
-  while(ctx.measureText(headline).width>maxW && fontSize>36){
-    fontSize-=4;
-    ctx.font=`900 ${fontSize}px 'PingFang SC','Microsoft YaHei',sans-serif`;
-  }
-  ctx.fillText(headline,W/2,340);ctx.textAlign="start";
+  // ---- small icon ----
+  ctx.font="60px sans-serif";ctx.textAlign="center";
+  ctx.fillText("⚽",W/2,120);ctx.textAlign="start";
 
-  // ---- 2. social proof ----
-  ctx.fillStyle="rgba(255,255,255,0.85)";ctx.font="700 46px 'PingFang SC','Microsoft YaHei',sans-serif";
+  // ---- headline line 1 (white) ----
+  ctx.fillStyle="#fff";ctx.font="900 54px 'PingFang SC','Microsoft YaHei',sans-serif";
   ctx.textAlign="center";
-  ctx.fillText(t("viralSupport").replace("{n}",fmt(d.china)),W/2,480);
+  ctx.fillText(t("viralHeadline1"),W/2,280);ctx.textAlign="start";
+
+  // ---- headline line 2 (gold, bigger) ----
+  ctx.fillStyle="#ffd700";ctx.font="900 82px 'PingFang SC','Microsoft YaHei',sans-serif";
+  ctx.textAlign="center";
+  ctx.fillText(t("viralHeadline2"),W/2,390);ctx.textAlign="start";
+
+  // ---- subtle gold line ----
+  ctx.strokeStyle="rgba(255,215,0,0.4)";ctx.lineWidth=1;
+  ctx.beginPath();ctx.moveTo(W/2-60,440);ctx.lineTo(W/2+60,440);ctx.stroke();
+
+  // ---- vote count ----
+  ctx.fillStyle="rgba(255,255,255,0.9)";ctx.font="700 40px 'PingFang SC','Microsoft YaHei',sans-serif";
+  ctx.textAlign="center";
+  ctx.fillText(t("viralSupport").replace("{n}",fmt(d.china)),W/2,520);
   ctx.textAlign="start";
 
-  // ---- 3. QR code ----
-  const qrSize=220,qrY=580;
-  ctx.fillStyle="#fff";ctx.fillRect((W-qrSize)/2-14,qrY-14,qrSize+28,qrSize+28);
+  // ---- QR code ----
+  const qrSize=210,qrY=600;
+  // white bg with subtle shadow
+  ctx.fillStyle="rgba(0,0,0,0.3)";ctx.fillRect((W-qrSize)/2-2,qrY+2,qrSize+20,qrSize+24);
+  ctx.fillStyle="#fff";ctx.fillRect((W-qrSize)/2-12,qrY-12,qrSize+24,qrSize+24);
 
   let qrLoaded=false;
   try{
@@ -336,13 +348,14 @@ async function makeViralCard(){
   }catch(e){console.warn("QR failed",e);}
 
   if(!qrLoaded){
-    ctx.fillStyle="#c41020";ctx.font="900 32px 'PingFang SC','Microsoft YaHei',sans-serif";
-    ctx.textAlign="center";ctx.fillText("getcup.icu",W/2,qrY+qrSize/2+10);ctx.textAlign="start";
+    ctx.fillStyle="#c41020";ctx.font="900 28px 'PingFang SC','Microsoft YaHei',sans-serif";
+    ctx.textAlign="center";ctx.fillText("getcup.icu",W/2,qrY+qrSize/2+8);ctx.textAlign="start";
   }
 
   // ---- domain ----
-  ctx.fillStyle="#fff";ctx.font="800 44px 'PingFang SC','Microsoft YaHei',sans-serif";
-  ctx.textAlign="center";ctx.fillText("getcup.icu",W/2,qrY+qrSize+60);ctx.textAlign="start";
+  ctx.fillStyle="#fff";ctx.font="800 42px 'PingFang SC','Microsoft YaHei',sans-serif";
+  ctx.textAlign="center";
+  ctx.fillText("getcup.icu",W/2,qrY+qrSize+58);ctx.textAlign="start";
 
   return canvas;
 }
