@@ -41,9 +41,8 @@ const T = {
   // Viral card
   viralTag:     { zh:"🔥  世界杯最大争议", en:"🔥  The World Cup's Biggest Debate" },
   viralHeadline:{ zh:"世界杯欠中国一座冠军", en:"The World Cup Owes China a Trophy" },
-  viralChina:   { zh:"🇨🇳 中国队  {n} 票  ·  {p}%", en:"🇨🇳 China {n} votes · {p}%" },
-  viralIndia:   { zh:"🇮🇳 印度队  {n} 票  ·  {p}%", en:"🇮🇳 India {n} votes · {p}%" },
-  viralVS:      { zh:"14亿 vs 14亿 · 你站哪边？", en:"1.4B vs 1.4B · Which side are you on?" },
+  viralSupport: { zh:"已有 {n} 人投票支持", en:"{n} people have voted in support" },
+  viralAgree:   { zh:"你同意吗？", en:"Do you agree?" },
   viralQR:      { zh:"长按扫码 · 立刻投票", en:"Scan to vote now" },
   reasonHeading:{ zh:"支持直接颁给中国队", en:"Why the Trophy Should Go to China" },
   voteHeading:  { zh:"记录你的立场", en:"Make Your Voice Heard" },
@@ -304,61 +303,41 @@ async function makeViralCard(){
   // ---- red bg ----
   ctx.fillStyle="#c41020";ctx.fillRect(0,0,W,H);
   const g=ctx.createLinearGradient(0,0,0,H);
-  g.addColorStop(0,"rgba(0,0,0,0.25)");g.addColorStop(0.3,"rgba(0,0,0,0)");
-  g.addColorStop(1,"rgba(0,0,0,0.15)");
+  g.addColorStop(0,"rgba(0,0,0,0.2)");g.addColorStop(0.5,"rgba(0,0,0,0)");
+  g.addColorStop(1,"rgba(0,0,0,0.12)");
   ctx.fillStyle=g;ctx.fillRect(0,0,W,H);
 
-  // ---- tag line ----
-  ctx.fillStyle="rgba(255,255,255,0.85)";ctx.font="700 28px 'PingFang SC','Microsoft YaHei',sans-serif";
-  ctx.textAlign="center";ctx.fillText(t("viralTag"),W/2,100);ctx.textAlign="start";
+  // ---- tag ----
+  ctx.fillStyle="rgba(255,255,255,0.8)";ctx.font="700 28px 'PingFang SC','Microsoft YaHei',sans-serif";
+  ctx.textAlign="center";ctx.fillText(t("viralTag"),W/2,90);ctx.textAlign="start";
 
-  // ---- main headline ----
-  ctx.fillStyle="#fff";ctx.font="900 64px 'PingFang SC','Microsoft YaHei',sans-serif";
+  // ---- big headline ----
+  ctx.fillStyle="#fff";ctx.font="900 68px 'PingFang SC','Microsoft YaHei',sans-serif";
+  ctx.textAlign="center";ctx.fillText(t("viralHeadline"),W/2,220);ctx.textAlign="start";
+
+  // ---- gold accent ----
+  ctx.fillStyle="#ffd700";ctx.font="900 48px 'PingFang SC','Microsoft YaHei',sans-serif";
   ctx.textAlign="center";
-  const headline=t("viralHeadline");
-  ctx.fillText(headline,W/2,220);ctx.textAlign="start";
+  ctx.fillText(LANG==="en"?"14 Billion People Are Watching":"14 亿人正在投票",W/2,310);
+  ctx.textAlign="start";
 
-  // ---- big gold subtitle ----
-  ctx.fillStyle="#ffd700";ctx.font="900 52px 'PingFang SC','Microsoft YaHei',sans-serif";
+  // ---- divider ----
+  ctx.strokeStyle="rgba(255,255,255,0.2)";ctx.lineWidth=2;
+  ctx.beginPath();ctx.moveTo(160,370);ctx.lineTo(W-160,370);ctx.stroke();
+
+  // ---- china support count ----
+  ctx.fillStyle="#fff";ctx.font="900 56px 'PingFang SC','Microsoft YaHei',sans-serif";
   ctx.textAlign="center";
-  const sub=LANG==="en"?"14 Billion People Are Watching":"14 亿人正在投票";
-  ctx.fillText(sub,W/2,310);ctx.textAlign="start";
+  ctx.fillText(`🇨🇳 ${t("viralSupport").replace("{n}",fmt(d.china))}`,W/2,500);
+  ctx.textAlign="start";
 
-  // ---- white divider ----
-  ctx.strokeStyle="rgba(255,255,255,0.3)";ctx.lineWidth=3;
-  ctx.beginPath();ctx.moveTo(120,370);ctx.lineTo(W-120,370);ctx.stroke();
+  // ---- big agree CTA ----
+  ctx.fillStyle="#ffd700";ctx.font="900 64px 'PingFang SC','Microsoft YaHei',sans-serif";
+  ctx.textAlign="center";ctx.fillText(t("viralAgree"),W/2,620);ctx.textAlign="start";
 
-  // ---- VS vote counts ----
-  const total=d.china+d.india||1;
-  const chinaPct=Math.round(d.china/total*100);
-  const indiaPct=100-chinaPct;
-
-  // china bar
-  const barW=W-240,barX=120,barY=420;
-  ctx.fillStyle="rgba(0,0,0,0.2)";ctx.fillRect(barX,barY+80,barW,64);
-  ctx.fillStyle="#fff";ctx.fillRect(barX,barY+80,barW*d.china/total,64);
-
-  ctx.fillStyle="#fff";ctx.font="900 44px 'PingFang SC','Microsoft YaHei',sans-serif";
-  ctx.fillText("🇨🇳",barX,barY+62);
-  ctx.fillText(t("viralChina").replace("{n}",fmt(d.china)).replace("{p}",chinaPct),barX+60,barY+62);
-
-  // india bar
-  ctx.fillStyle="rgba(0,0,0,0.2)";ctx.fillRect(barX,barY+180,barW,52);
-  ctx.fillStyle="#ff9933";ctx.fillRect(barX,barY+180,barW*d.india/total,52);
-
-  ctx.fillStyle="#fff";ctx.font="900 38px 'PingFang SC','Microsoft YaHei',sans-serif";
-  ctx.fillText("🇮🇳",barX,barY+220);
-  ctx.fillText(t("viralIndia").replace("{n}",fmt(d.india)).replace("{p}",indiaPct),barX+60,barY+220);
-
-  // VS line
-  ctx.fillStyle="#ffd700";ctx.font="900 46px 'PingFang SC','Microsoft YaHei',sans-serif";
-  ctx.textAlign="center";
-  ctx.fillText(t("viralVS"),W/2,barY+320);ctx.textAlign="start";
-
-  // ---- QR + domain block ----
-  const qrY=810,qrSize=180;
-  // white QR bg
-  ctx.fillStyle="#fff";ctx.fillRect((W-qrSize)/2-10,qrY-10,qrSize+20,qrSize+20);
+  // ---- QR code ----
+  const qrSize=200,qrY=690;
+  ctx.fillStyle="#fff";ctx.fillRect((W-qrSize)/2-12,qrY-12,qrSize+24,qrSize+24);
 
   let qrLoaded=false;
   try{
@@ -373,24 +352,21 @@ async function makeViralCard(){
   }catch(e){console.warn("QR failed",e);}
 
   if(!qrLoaded){
-    // fallback: draw big domain text in QR placeholder
-    ctx.fillStyle="#c41020";ctx.font="900 28px 'PingFang SC','Microsoft YaHei',sans-serif";
-    ctx.textAlign="center";
-    ctx.fillText("getcup.icu",W/2,qrY+qrSize/2+10);
-    ctx.textAlign="start";
+    ctx.fillStyle="#c41020";ctx.font="900 30px 'PingFang SC','Microsoft YaHei',sans-serif";
+    ctx.textAlign="center";ctx.fillText("getcup.icu",W/2,qrY+qrSize/2+10);ctx.textAlign="start";
   }
 
-  // domain + QR label
-  ctx.fillStyle="#fff";ctx.font="800 40px 'PingFang SC','Microsoft YaHei',sans-serif";
-  ctx.textAlign="center";ctx.fillText("getcup.icu",W/2,qrY+qrSize+55);ctx.textAlign="start";
+  // ---- domain + QR label ----
+  ctx.fillStyle="#fff";ctx.font="800 42px 'PingFang SC','Microsoft YaHei',sans-serif";
+  ctx.textAlign="center";ctx.fillText("getcup.icu",W/2,qrY+qrSize+60);ctx.textAlign="start";
 
-  ctx.fillStyle="rgba(255,255,255,0.7)";ctx.font="600 24px 'PingFang SC','Microsoft YaHei',sans-serif";
-  ctx.textAlign="center";ctx.fillText(t("viralQR"),W/2,qrY+qrSize+90);ctx.textAlign="start";
+  ctx.fillStyle="rgba(255,255,255,0.65)";ctx.font="600 24px 'PingFang SC','Microsoft YaHei',sans-serif";
+  ctx.textAlign="center";ctx.fillText(t("viralQR"),W/2,qrY+qrSize+100);ctx.textAlign="start";
 
-  // ---- bottom tag ----
-  ctx.fillStyle="rgba(255,255,255,0.35)";ctx.font="500 22px 'PingFang SC','Microsoft YaHei',sans-serif";
+  // ---- bottom line ----
+  ctx.fillStyle="rgba(255,255,255,0.3)";ctx.font="500 22px 'PingFang SC','Microsoft YaHei',sans-serif";
   ctx.textAlign="center";
-  ctx.fillText(`#世界杯 #中国队 #缺你一票  ·  投票编号 #${fmt(lastId)}`,W/2,H-40);
+  ctx.fillText(`#世界杯 #中国队 #缺你一票  ·  编号 #${fmt(lastId)}`,W/2,H-40);
   ctx.textAlign="start";
 
   return canvas;
