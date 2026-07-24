@@ -270,10 +270,8 @@ async function submitVote(e){
   updates[choice]=firebase.database.ServerValue.increment(1);
   updates.lastId=firebase.database.ServerValue.increment(1);
   await db.ref("votes").update(updates);
-  // read back to get the new lastId for display
-  const snap = await db.ref("votes/lastId").once("value");
-  const newId = snap.val() || (voteData.lastId + 1);
-  $("#recordId").textContent=`#${fmt(newId)}`;
+  const snap = await db.ref("votes/china").once("value");
+  $("#recordId").textContent=`#${fmt(snap.val()||voteData.china)}`;
   $("#success").classList.remove("hidden");
   $("#success").scrollIntoView({behavior:"smooth",block:"center"});
 }
@@ -282,8 +280,8 @@ async function autoVoteChina(){
   gtag('event','vote',{event_category:'vote',event_label:'china_hero',value:1});
   const updates={china:firebase.database.ServerValue.increment(1),lastId:firebase.database.ServerValue.increment(1)};
   await db.ref("votes").update(updates);
-  const snap = await db.ref("votes/lastId").once("value");
-  $("#recordId").textContent=`#${fmt(snap.val()||voteData.lastId+1)}`;
+  const snap = await db.ref("votes/china").once("value");
+  $("#recordId").textContent=`#${fmt(snap.val()||voteData.china+1)}`;
   $("#success").classList.remove("hidden");
   $("#success").scrollIntoView({behavior:"smooth",block:"center"});
 }

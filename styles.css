@@ -292,13 +292,17 @@ blockquote {
   border: 6px solid #1a0e0f; background: var(--red);
   box-shadow: 0 0 0 2px var(--red);
 }
+.india-choice {
+  opacity: 0.55; border-color: #2a2a2a;
+}
+.india-choice:hover { opacity: 0.75; border-color: #444; }
 .choice.selected.india-choice, .india-choice.selected {
-  border-color: var(--india); background: #1a1208;
-  box-shadow: 0 0 24px rgba(255,153,51,0.15);
+  opacity: 0.7; border-color: #555; background: #161616;
+  box-shadow: none;
 }
 .choice.selected.india-choice i, .india-choice.selected i {
-  border: 6px solid #1a1208; background: var(--india);
-  box-shadow: 0 0 0 2px var(--india);
+  border: 6px solid #161616; background: #666;
+  box-shadow: 0 0 0 2px #555;
 }
 
 .submit { width: 100%; margin-top: 22px; height: 58px; font-size: 17px; }
@@ -350,7 +354,8 @@ blockquote {
   border: 2px solid #441719; background: linear-gradient(135deg, #120808, #0a0a0a);
 }
 .vs-india {
-  border: 2px solid #3d2a10; background: linear-gradient(135deg, #120d08, #0a0a0a);
+  border: 2px solid #222; background: linear-gradient(135deg, #0f0f0f, #080808);
+  opacity: 0.6;
 }
 .vs-flag { display: block; font-size: 52px; margin-bottom: 10px; }
 .vs-card strong {
@@ -387,7 +392,7 @@ blockquote {
   display: block; height: 100%; border-radius: 99px; transition: width 0.4s ease;
 }
 .track .bar-china { background: var(--red); }
-.track .bar-india { background: var(--india); }
+.track .bar-india { background: #555; }
 
 /* ---- message board ---- */
 .msg-form { padding: 18px; border: 1px solid var(--line); border-radius: 12px; background: var(--panel); }
