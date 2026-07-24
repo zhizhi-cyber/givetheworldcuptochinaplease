@@ -282,7 +282,7 @@ async function autoVoteChina(){
 }
 
 // ---- share ----
-const SITE_URL="https://givetheworldcuptochinaplease.netlify.app/";
+const SITE_URL="https://getcup.icu/";
 
 async function makeViralCard(){
   const snap=await db.ref("votes/lastId").once("value");
@@ -331,7 +331,7 @@ async function makeViralCard(){
   // domain
   ctx.fillStyle="rgba(255,255,255,0.7)";ctx.font="700 28px 'PingFang SC','Microsoft YaHei',sans-serif";
   ctx.textAlign="center";
-  ctx.fillText("givetheworldcuptochinaplease.netlify.app",W/2,830);
+  ctx.fillText("getcup.icu",W/2,830);
   ctx.textAlign="start";
 
   // QR code
@@ -398,8 +398,8 @@ async function shareWeibo(){
 
 async function copyShare(){
   const text=LANG==="en"
-    ?"The World Cup trophy should go directly to China! 1.4B vs 1.4B — cast your vote now!\n\n👉 https://givetheworldcuptochinaplease.netlify.app/"
-    :"世界杯奖杯应该直接颁给中国队！14亿vs14亿，缺你一票！\n\n👉 https://givetheworldcuptochinaplease.netlify.app/";
+    ?"The World Cup trophy should go directly to China! 1.4B vs 1.4B — cast your vote now!\n\n👉 https://getcup.icu/"
+    :"世界杯奖杯应该直接颁给中国队！14亿vs14亿，缺你一票！\n\n👉 https://getcup.icu/";
   await navigator.clipboard.writeText(text);
   alert(LANG==="en"?"Copied! Paste to share.":"已复制！粘贴到抖音/小红书/评论区即可。");
 }
@@ -410,7 +410,7 @@ async function downloadPoster(){
   const lastId=snap.val()||voteData.lastId;
   const canvas=document.createElement("canvas"),ctx=canvas.getContext("2d");
   const W=1080,H=1350;canvas.width=W;canvas.height=H;
-  const siteUrl="https://givetheworldcuptochinaplease.netlify.app/";
+  const siteUrl="https://getcup.icu/";
 
   // all red background
   ctx.fillStyle="#d4212b";ctx.fillRect(0,0,W,H);
