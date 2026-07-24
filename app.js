@@ -216,6 +216,7 @@ function renderReasons(){
 }
 
 function refreshReasons(){
+  gtag('event','refresh_reasons',{event_category:'engagement'});
   pickRandom(); renderReasons();
   $("#reasons").style.transition="none";
   $("#reasons").style.opacity="0.6";
@@ -260,6 +261,7 @@ function renderResults(){
 
 async function submitVote(e){
   e.preventDefault();
+  gtag('event','vote',{event_category:'vote',event_label:choice,value:1});
   const updates={};
   updates[choice]=firebase.database.ServerValue.increment(1);
   updates.lastId=firebase.database.ServerValue.increment(1);
@@ -273,6 +275,7 @@ async function submitVote(e){
 }
 
 async function autoVoteChina(){
+  gtag('event','vote',{event_category:'vote',event_label:'china_hero',value:1});
   const updates={china:firebase.database.ServerValue.increment(1),lastId:firebase.database.ServerValue.increment(1)};
   await db.ref("votes").update(updates);
   const snap = await db.ref("votes/lastId").once("value");
@@ -367,6 +370,7 @@ async function makeViralCard(){
 }
 
 async function shareMoments(){
+  gtag('event','share',{event_category:'share',event_label:'moments'});
   const canvas=await makeViralCard();
   try{
     const blob=await new Promise(r=>canvas.toBlob(r,"image/png"));
@@ -382,6 +386,7 @@ async function shareMoments(){
 }
 
 async function shareWeibo(){
+  gtag('event','share',{event_category:'share',event_label:'weibo_twitter'});
   const canvas=await makeViralCard();
   const shareText=LANG==="en"
     ?"The World Cup trophy should go directly to China. 1.4B vs 1.4B. Vote now! #WorldCup #China #YourVoteMatters"
@@ -397,6 +402,7 @@ async function shareWeibo(){
 }
 
 async function copyShare(){
+  gtag('event','share',{event_category:'share',event_label:'copy'});
   const text=LANG==="en"
     ?"The World Cup trophy should go directly to China! 1.4B vs 1.4B — cast your vote now!\n\n👉 https://getcup.icu/"
     :"世界杯奖杯应该直接颁给中国队！14亿vs14亿，缺你一票！\n\n👉 https://getcup.icu/";
@@ -531,6 +537,7 @@ function fmtTime(ts){
 }
 
 async function postMessage(text,nick){
+  gtag('event','message_post',{event_category:'engagement'});
   const id=messages.length?Math.max(...messages.map(m=>m.id))+1:1;
   messages.push({id,text:text.trim(),nick:nick.trim()||"",likes:0,ts:Date.now()});
   await db.ref("messages").set(messages);msgPage=1;
