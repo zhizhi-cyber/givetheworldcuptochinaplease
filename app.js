@@ -319,12 +319,14 @@ async function makeViralCard(){
   ctx.textAlign="center";
   ctx.fillText(t("viralHeadline2"),W/2,390);ctx.textAlign="start";
 
-  // ---- vote count (prominent) ----
-  ctx.fillStyle="rgba(255,255,255,0.15)";ctx.fillRect(120,450,W-240,90);
-  ctx.fillStyle="#fff";ctx.font="900 60px 'PingFang SC','Microsoft YaHei',sans-serif";
+  // ---- vote count ----
+  ctx.fillStyle="#ffd700";ctx.font="900 100px 'PingFang SC','Microsoft YaHei',sans-serif";
   ctx.textAlign="center";
-  ctx.fillText(t("viralSupport").replace("{n}",fmt(d.china)),W/2,515);
-  ctx.textAlign="start";
+  ctx.fillText(fmt(d.china),W/2,540);ctx.textAlign="start";
+
+  ctx.fillStyle="#fff";ctx.font="600 38px 'PingFang SC','Microsoft YaHei',sans-serif";
+  ctx.textAlign="center";
+  ctx.fillText(LANG==="en"?"people have voted":"人已投票",W/2,610);ctx.textAlign="start";
 
   // ---- QR code ----
   const qrSize=210,qrY=610;
