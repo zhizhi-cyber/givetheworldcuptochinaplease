@@ -143,7 +143,7 @@ const ALL_REASONS = [
 ];
 
 const DISPLAY_COUNT = 5;
-const SEED_VOTES = { china: 48231, india: 27154 };
+const SEED_VOTES = { china: 48530, india: 4526 };
 let displayedReasons = [];
 
 function shuffle(arr){
