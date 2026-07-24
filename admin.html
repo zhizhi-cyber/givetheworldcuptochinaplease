@@ -31,7 +31,35 @@
   </style>
 </head>
 <body>
-<div class="container">
+
+<!-- Password Gate -->
+<div id="pwGate" style="position:fixed;z-index:9999;top:0;left:0;width:100%;height:100%;background:#0a0a0a;display:flex;align-items:center;justify-content:center;flex-direction:column">
+  <div style="text-align:center">
+    <h2 style="margin:0 0 8px;font-size:20px">🔐 验证访问</h2>
+    <p style="color:#555;font-size:12px;margin:0 0 20px">推广后台 · 请输入密码</p>
+    <input id="pwInput" type="password" placeholder="输入密码" style="width:260px;height:48px;padding:0 16px;border:1px solid #333;border-radius:8px;background:#111;color:#fff;font-size:16px;text-align:center" onkeydown="if(event.key==='Enter')checkPw()" autofocus />
+    <button onclick="checkPw()" style="display:block;width:260px;margin-top:12px;height:44px;border:0;border-radius:8px;background:#d4212b;color:#fff;font-size:15px;font-weight:700;cursor:pointer">进入后台</button>
+    <p id="pwError" style="color:#d4212b;font-size:11px;margin-top:10px;display:none">密码错误</p>
+  </div>
+</div>
+
+<script>
+async function checkPw(){
+  const input=document.getElementById("pwInput").value;
+  // SHA-256 of password, change by replacing the hash below
+  const hash=await crypto.subtle.digest("SHA-256",new TextEncoder().encode(input));
+  const hex=[...new Uint8Array(hash)].map(b=>b.toString(16).padStart(2,"0")).join("");
+  // Default password: getcup2026
+  if(hex==="7280b63791d352b7007d1513431760d38ed30c7905a869ad32e3e23bfbd06227"){
+    document.getElementById("pwGate").style.display="none";
+  }else{
+    document.getElementById("pwError").style.display="block";
+    document.getElementById("pwInput").value="";
+  }
+}
+</script>
+
+<div class="container" id="mainContent">
   <h1>📊 推广后台</h1>
   <p style="color:#555;font-size:12px;margin:0 0 20px">getcup.icu · 所有数据实时同步</p>
 
